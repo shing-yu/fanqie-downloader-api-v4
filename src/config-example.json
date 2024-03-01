@@ -1,0 +1,80 @@
+{
+  "comment": "这是一个示例配置文件, 请复制此文件并重命名为config.json, 然后修改为你自己的配置",
+  "wsgi": false,
+  "reserve_proxy": false, "?reserve_proxy": "如果你使用了反向代理，请将该项改为‘true’，否则程序将出现错误",
+  "cdn": false,
+  "log": {
+    "level": "DEBUG",
+    "console_level": "INFO",
+    "filepath": "logs/api.log",
+    "maxSize": "20 MB",
+    "backupCount": 20
+  },
+  "server": {
+    "port": 5000,
+    "host": "0.0.0.0", "?host": "监听地址，如果使用ipv6，请改为‘::’",
+    "debug": false,
+    "thread": false,
+    "https": {
+      "enable": false,
+      "ssl_cert": "",
+      "ssl_key": "",
+      "force_https": false
+    }
+  },
+  "database": "api.db",
+  "administrator": {
+    "enable": false,
+    "password": "L147258963oOOi",
+    "totp": {
+      "enable": false,
+      "secret": "XXXXXXXXXXXXXXXX"
+    },
+    "enable_list_all_tasks": false, "?enable_list_all_book": "允许此请求可能导致程序负载过大，请谨慎开启"
+  },
+  "save_dir": "output",
+  "encoding": "utf-8",
+  "filename_format": "{title}_{book_id}.txt",
+  "speed_limit": 0.5, "?speed_limit": "下载速度限制, 单位为s/it, 最低为0.25",
+  "time_range": "false", "?time_range": "可用时间, 用-分隔, 例如 18-22 表示晚上6点到10点（北京时间），不限制请填‘false’",
+  "limiter": {
+    "enable": true,
+    "api": {
+      "per_minute": "15",
+      "per_hour": "200",
+      "per_day": "300"
+    },
+    "list": {
+      "per_minute": "20",
+      "per_hour": "200",
+      "per_day": "500"
+    },
+    "download": {
+      "per_minute": "10",
+      "per_hour": "100",
+      "per_day": "300"
+    }
+  },
+  "upload": {
+    "base_dir": "API/小说",
+    "cos": {
+      "comment": "腾讯云对象存储, 请参考 https://cloud.tencent.com/document/product/436/8629",
+      "enable": false,
+      "secret_id": "",
+      "secret_key": "",
+      "region": "ap-xxxxxxxx",
+      "bucket": "xxx-0000000000",
+      "scheme": "https",
+      "token": null
+    },
+    "ofb":{
+      "comment": "OneDrive for Business",
+      "enable": false,
+      "client_id": "your_client_id",
+      "client_secret": "your_client_secret",
+      "tenant_id": "your_tenant_id",
+      "endpoint": "/Documents/"
+    }
+  }
+
+}
