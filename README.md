@@ -81,10 +81,10 @@ cd fanqie-downloader-api-v4
 
 **下载压缩包**
 
-① 访问项目 GitHub 页面: [your_project](https://github.com/your_username/your_project)
-② 点击 "Clone or download" 按钮
-③ 选择 "Download ZIP"
-④ 解压下载的压缩包至你想要保存项目的目录
+① 访问项目 GitHub 页面: [your_project](https://github.com/your_username/your_project)  
+② 点击 "Clone or download" 按钮  
+③ 选择 "Download ZIP"  
+④ 解压下载的压缩包至你想要保存项目的目录  
 ⑤ 在目录中打开终端
 
 <br>
