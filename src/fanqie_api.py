@@ -5,10 +5,10 @@ import os
 import re
 from os import path
 import time
-import public as p
+import src.public as p
 from loguru import logger
 
-from cos_upload import cos_upload
+from src.cos_upload import cos_upload
 # noinspection PyPackageRequirements
 from qcloud_cos import CosServiceError
 # noinspection PyPackageRequirements
@@ -16,7 +16,7 @@ from qcloud_cos import CosClientError
 
 
 # 定义正常模式用来下载番茄小说的函数
-def download(url: str, encoding: str, config: dict) -> tuple:
+def download(url: str, encoding: str, config: dict, save_dir: str) -> tuple:
     title = None
     last_cid = None
     finished: int = -1  # 使用数字代表小说是否已完结，-1 代表未知，0 代表未完结，1 代表已完结
@@ -36,10 +36,10 @@ def download(url: str, encoding: str, config: dict) -> tuple:
         headers, title, content, chapters, finished = p.get_fanqie(url, ua)
 
         # 定义文件名
-        file_path = path.join(config["save_dir"],
+        file_path = path.join(save_dir,
                               config["filename_format"].format(title=title, book_id=book_id))
 
-        os.makedirs(config["save_dir"], exist_ok=True)
+        os.makedirs(save_dir, exist_ok=True)
 
         last_cid = None
 
@@ -60,7 +60,7 @@ def download(url: str, encoding: str, config: dict) -> tuple:
                 # 在小说内容字符串中添加章节标题和内容
                 content += f"\n\n\n{chapter_title}\n{chapter_text}"
 
-                logger.trace(f"ID: {book_id} 已获取 {chapter_title} 章节ID: {chapter_id}")
+                logger.trace(f"已获取 {chapter_title} 章节ID: {chapter_id}", id=book_id)
 
             # 根据编码转换小说内容字符串为二进制数据
             data = content.encode(encoding, errors='ignore')
@@ -69,7 +69,7 @@ def download(url: str, encoding: str, config: dict) -> tuple:
             with open(file_path, "wb") as f:
                 f.write(data)
 
-            logger.success(f"小说《{title}》已保存到本地")
+            logger.success(f"小说《{title}》已保存到本地", id=book_id)
 
             upload_cos(file_path, title, config)
 
@@ -86,11 +86,11 @@ def download(url: str, encoding: str, config: dict) -> tuple:
             with open(file_path, "wb") as f:
                 f.write(data)
 
-            logger.error(f"小说《{title}》下载失败：{e}")
+            logger.error(f"小说《{title}》下载失败：{e}", id=book_id)
 
             logger.exception(e)
 
-            logger.warning(f"小说《{title}》已保存到本地（中断保存）")
+            logger.warning(f"小说《{title}》已保存到本地（中断保存）", id=book_id)
 
             raise Exception(f"下载失败: {e}")
 
@@ -132,6 +132,9 @@ def update(url: str, encoding: str, start_id: str, file_path: str, config: dict)
     # noinspection PyBroadException
     try:
 
+        # 提取书籍ID
+        book_id = re.search(r'page/(\d+)', url).group(1)
+
         ua = (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -152,7 +155,7 @@ def update(url: str, encoding: str, start_id: str, file_path: str, config: dict)
 
         # 判断是否已经最新
         if start_index >= len(chapters):
-            logger.info(f"小说《{title}》已经是最新章节，无需更新")
+            logger.info(f"小说《{title}》已经是最新章节，无需更新", id=book_id)
             return "completed", last_cid, finished
 
         with open(file_path, 'ab') as f:
@@ -178,9 +181,9 @@ def update(url: str, encoding: str, start_id: str, file_path: str, config: dict)
                     # 将数据追加到文件中
                     f.write(data)
 
-                    logger.trace(f"小说: {title} 已增加 {chapter_title} 章节ID: {chapter_id_now}")
+                    logger.trace(f"小说: {title} 已增加 {chapter_title} 章节ID: {chapter_id_now}", id=book_id)
 
-                logger.success(f"小说《{title}》已保存到本地，路径：{file_path}")
+                logger.success(f"小说《{title}》已保存到本地，路径：{file_path}", id=book_id)
 
                 upload_cos(file_path, title, config)
 
@@ -190,11 +193,11 @@ def update(url: str, encoding: str, start_id: str, file_path: str, config: dict)
 
             except BaseException as e:
 
-                logger.error(f"小说《{title}》更新失败：{e}")
+                logger.error(f"小说《{title}》更新失败：{e}", id=book_id)
 
                 logger.exception(e)
 
-                logger.warning(f"小说《{title}》已保存到本地（中断保存）")
+                logger.warning(f"小说《{title}》已保存到本地（中断保存）", id=book_id)
 
                 raise Exception(f"更新失败: {e}")
 

@@ -1,24 +1,3 @@
-"""
-作者：星隅（xing-yv）
-
-版权所有（C）2023 星隅（xing-yv）
-
-本软件根据GNU通用公共许可证第三版（GPLv3）发布；
-你可以在以下位置找到该许可证的副本：
-https://www.gnu.org/licenses/gpl-3.0.html
-
-根据GPLv3的规定，您有权在遵循许可证的前提下自由使用、修改和分发本软件。
-请注意，根据许可证的要求，任何对本软件的修改和分发都必须包括原始的版权声明和GPLv3的完整文本。
-
-本软件提供的是按"原样"提供的，没有任何明示或暗示的保证，包括但不限于适销性和特定用途的适用性。作者不对任何直接或间接损害或其他责任承担任何责任。在适用法律允许的最大范围内，作者明确放弃了所有明示或暗示的担保和条件。
-
-免责声明：
-该程序仅用于学习和研究Python网络爬虫和网页处理技术，不得用于任何非法活动或侵犯他人权益的行为。使用本程序所产生的一切法律责任和风险，均由用户自行承担，与作者和项目协作者、贡献者无关。作者不对因使用该程序而导致的任何损失或损害承担任何责任。
-
-请在使用本程序之前确保遵守相关法律法规和网站的使用政策，如有疑问，请咨询法律顾问。
-
-无论您对程序进行了任何操作，请始终保留此信息。
-"""
 
 import re
 import os
@@ -27,25 +6,42 @@ import json
 import multiprocessing
 import queue
 import threading
-from multiprocessing import Pool
 import time
-from fanqie_api import download, update
-from flask import Flask, request, jsonify, make_response, send_from_directory
+from src.fanqie_api import download, update
+from flask import Flask, request, jsonify, make_response, send_from_directory, abort
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from datetime import datetime, timedelta
-# 使用sqlite数据库替换黑名单和任务状态表
-import sqlite3
+# 改用MySQL
+import pymysql
 from loguru import logger
 import logging
 
-with open("config.json", "r", encoding='utf-8') as conf:
-    try:
-        config = json.load(conf)
-    except json.JSONDecodeError as conf_e:
-        raise json.JSONDecodeError("配置文件格式不正确", conf_e.doc, conf_e.pos)
+# 如果是docker环境，则检测是否挂载
+if os.getenv("DOCKER_MODE") == "True":
+    if not os.path.exists("/app/data/config.json"):
+        print("Error: 请将配置文件挂载到 /app/data/config.json")
+        sys.exit(1)
+    if not os.path.exists("/app/data/output"):
+        print("Error: 请将输出目录挂载到 /app/data/output")
+        sys.exit(1)
 
-os.makedirs(config["save_dir"], exist_ok=True)
+    save_dir = "data/output"
+
+    with open("data/config.json", "r", encoding='utf-8') as conf:
+        try:
+            config = json.load(conf)
+        except json.JSONDecodeError as conf_e:
+            raise json.JSONDecodeError("配置文件格式不正确", conf_e.doc, conf_e.pos)
+else:
+    with open("config.json", "r", encoding='utf-8') as conf:
+        try:
+            config = json.load(conf)
+        except json.JSONDecodeError as conf_e:
+            raise json.JSONDecodeError("配置文件格式不正确", conf_e.doc, conf_e.pos)
+    save_dir = config["save_dir"]
+
+os.makedirs(save_dir, exist_ok=True)
 
 https = config["server"]["https"]["enable"]
 cert_path = config["server"]["https"]["ssl_cert"]
@@ -66,10 +62,12 @@ if config["administrator"]["totp"]["enable"]:
 
 # 配置控制台和文件使用不同级别输出
 logger.remove()
-log_format = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>"
+log_format = ("<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | "
+              "<cyan>{extra[id]}</cyan> | <level>{message}</level>")
 logger.add(config["log"]["filepath"], rotation=config["log"]["maxSize"], level=config["log"]["level"],
            retention=config["log"]["backupCount"], encoding="utf-8", enqueue=True, format=log_format)
 logger.add(sys.stdout, level=config["log"]["console_level"], enqueue=True, format=log_format)
+logger.configure(extra={"id": "None"})
 
 app = Flask(__name__)
 # 使用loguru的日志记录器替换flask的日志记录器
@@ -91,8 +89,11 @@ if config["cdn"] is False:
 def get_ip():
     if config['cdn']:
         x_forwarded_for = request.headers.get('X-Forwarded-For')
-        client_ip = x_forwarded_for.split(',')[0].strip()
-        return client_ip
+        if x_forwarded_for:
+            client_ip = x_forwarded_for.split(',')[0].strip()
+            return client_ip
+        else:
+            return "Unknown IP"
     else:
         return get_remote_address()
 
@@ -105,29 +106,51 @@ limiter = Limiter(
     app=app,
     default_limits=["360 per day", "180 per hour"]
 )
-logger.debug("程序初始化完成")
+logger.info("程序初始化完成")
 
 # 创建并连接数据库
-db = sqlite3.connect(config["database"], check_same_thread=False)
-logger.debug("数据库连接成功")
+conn = pymysql.connect(
+    host=config["mysql"]["host"],
+    port=config["mysql"]["port"],
+    user=config["mysql"]["user"],
+    password=config["mysql"]["password"],
+    charset='utf8mb4',
+    autocommit=True)
+conn.cursor().execute("CREATE DATABASE IF NOT EXISTS %s" % config["mysql"]["database"])
+conn.select_db(config["mysql"]["database"])
+
+logger.info("数据库连接成功")
+
+cursor = conn.cursor()
 
 # 创建一个黑名单表
-db.execute('''
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS blacklist
-(ip TEXT PRIMARY KEY,
-unblock_time TEXT);
+(
+    ip           varchar(255) not null
+        primary key,
+    unblock_time text         null
+);
 ''')
 
 # 创建一个任务状态表
-db.execute('''
+cursor.execute('''
 CREATE TABLE IF NOT EXISTS novels
-(id TEXT PRIMARY KEY,
-name TEXT,
-status TEXT,
-last_cid TEXT,
-last_update TEXT,
-finished INTEGER);
+(
+    num         int auto_increment,
+    id          varchar(255) not null
+        primary key,
+    name        text         null,
+    status      text         null,
+    last_cid    text         null,
+    last_update text         null,
+    finished    int          null,
+    constraint num
+        unique (num)
+);
 ''')
+
+cursor.close()
 
 logger.debug("数据库表创建成功或已存在")
 
@@ -140,8 +163,8 @@ def block_method():
     if request.method == 'POST':
         ip = get_ip()
         # 检查IP是否在黑名单中
-        cur1 = db.cursor()
-        cur1.execute("SELECT unblock_time FROM blacklist WHERE ip=?", (ip,))
+        cur1 = conn.cursor()
+        cur1.execute("SELECT unblock_time FROM blacklist WHERE ip=%s", (ip,))
         row = cur1.fetchone()
         if row is not None:
             # 检查限制是否已经解除
@@ -154,8 +177,7 @@ def block_method():
                 return response
             else:
                 # 如果限制已经解除，那么从黑名单中移除这个IP
-                cur1.execute("DELETE FROM blacklist WHERE ip=?", (ip,))
-                db.commit()
+                cur1.execute("DELETE FROM blacklist WHERE ip=%s", (ip,))
         cur1.close()
 
 
@@ -165,9 +187,8 @@ def ratelimit_handler(_e):
     ip = get_ip()
     logger.warning(f"IP: {ip} 触发了限制，已被添加到黑名单")
     unblock_time = datetime.now() + timedelta(hours=1)
-    cur0 = db.cursor()
-    cur0.execute("INSERT OR REPLACE INTO blacklist VALUES (?, ?)", (ip, unblock_time.strftime('%Y-%m-%d %H:%M:%S.%f')))
-    db.commit()
+    cur0 = conn.cursor()
+    cur0.execute("REPLACE INTO blacklist VALUES (%s, %s)", (ip, unblock_time.strftime('%Y-%m-%d %H:%M:%S.%f')))
     response = make_response("Too many requests. You have been added to the blacklist for 1 hour.", 429)
     response.headers['Retry-After'] = str(3600)  # 1小时的秒数
     cur0.close()
@@ -192,55 +213,51 @@ class Spider:
 
     @staticmethod
     def crawl(url):
+        book_id = url_to_book_id(url)
         try:
-            logger.info(f"Crawling for URL: {url}")
-            book_id = url_to_book_id(url)
-            curm = db.cursor()
-            curm.execute("SELECT finished FROM novels WHERE id=?", (book_id,))
+            logger.info(f"此书开始爬取", id=book_id)
+            curm = conn.cursor()
+            curm.execute("SELECT finished FROM novels WHERE id=%s", (book_id,))
             row = curm.fetchone()
             # 根据完结信息判断模式
             if row is not None and row[0] == 0:
                 # 如果已有信息，使用增量更新模式
-                with Pool(processes=1) as pool:
-                    logger.info(f"ID:{book_id} 使用增量更新模式")
-                    curm.execute("SELECT name, last_cid FROM novels WHERE id=?", (book_id,))
-                    row = curm.fetchone()
-                    title = row[0]
-                    last_cid = row[1]
-                    file_path = os.path.join(config["save_dir"],
-                                             config["filename_format"].format(title=title, book_id=book_id))
-                    logger.debug(f"名称: {title} 上次更新章节: {last_cid} 生成路径: {file_path} ID: {book_id} 开始更新")
-                    res = pool.apply(update, (url, config["encoding"], last_cid, file_path, config))  # 运行函数
-                    # 获取任务和小说信息
-                    status, last_cid, finished = res
-                    # 写入数据库
-                    curm.execute("UPDATE novels SET last_cid=?, last_update=?, finished=? WHERE id=?",
-                                 (last_cid, datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), finished, book_id))
-                    db.commit()
-                    curm.close()
-                    if status == "completed":
-                        return "completed"
-                    else:
-                        return "failed"
+                logger.info(f"此书使用增量更新模式", id=book_id)
+                curm.execute("SELECT name, last_cid FROM novels WHERE id=%s", (book_id,))
+                row = curm.fetchone()
+                title = row[0]
+                last_cid = row[1]
+                file_path = os.path.join(save_dir,
+                                         config["filename_format"].format(title=title, book_id=book_id))
+                logger.debug(f"名称: {title} 上次更新章节: {last_cid} 生成路径: {file_path} 开始更新", id=book_id)
+                res = update(url, config["encoding"], last_cid, str(file_path), config)  # 提交任务
+                # 获取任务和小说信息
+                status, last_cid, finished = res
+                # 写入数据库
+                curm.execute("UPDATE novels SET last_cid=%s, last_update=%s, finished=%s WHERE id=%s",
+                             (last_cid, datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), finished, book_id))
+                curm.close()
+                if status == "completed":
+                    return "completed"
+                else:
+                    return "failed"
             else:
                 # 如果没有或者未成功，则普通下载
-                with Pool(processes=1) as pool:
-                    logger.info(f"ID:{book_id} 使用普通下载模式")
-                    logger.debug(f"ID: {book_id} 开始下载")
-                    res = pool.apply(download, (url, config["encoding"], config))  # 运行函数
-                    # 获取任务和小说信息
-                    status, name, last_cid, finished = res
-                    # 写入数据库
-                    curm.execute("UPDATE novels SET name=?, last_cid=?, last_update=?, finished=? WHERE id=?",
-                                 (name, last_cid, datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), finished, book_id))
-                    db.commit()
-                    curm.close()
-                    if status == "completed":
-                        return "True"
-                    else:
-                        return "False"
+                logger.info(f"此书使用普通下载模式", id=book_id)
+                logger.debug(f"此书开始下载", id=book_id)
+                res = download(url, config["encoding"], config, save_dir)  # 提交任务
+                # 获取任务和小说信息
+                status, name, last_cid, finished = res
+                # 写入数据库
+                curm.execute("UPDATE novels SET name=%s, last_cid=%s, last_update=%s, finished=%s WHERE id=%s",
+                             (name, last_cid, datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), finished, book_id))
+                curm.close()
+                if status == "completed":
+                    return "True"
+                else:
+                    return "False"
         except Exception as e:
-            print(f"Error: {e}")
+            logger.error(f"此书爬取失败，错误信息: {e}", id=book_id)
             return "False"
 
     def worker(self):
@@ -250,33 +267,28 @@ class Spider:
                 # 从URL队列中获取URL
                 url = self.url_queue.get(timeout=1)
                 book_id = url_to_book_id(url)
-                curn = db.cursor()
-                logger.debug(f"ID: {book_id} 开始任务")
-                curn.execute("UPDATE novels SET status=? WHERE id=?", ("进行中", book_id))
-                db.commit()
-                logger.debug(f"ID: {book_id} 状态更新为进行中")
+                curn = conn.cursor()
+                logger.debug(f"此书开始任务", id=book_id)
+                curn.execute("UPDATE novels SET status=%s WHERE id=%s", ("进行中", book_id))
+                logger.debug(f"此书状态更新为进行中", id=book_id)
                 status = Spider.crawl(url)
                 # 调用爬虫函数爬取URL，如果出错则标记为失败并跳过这个任务进行下一个
                 if status == "True":
-                    curn.execute("UPDATE novels SET status=? WHERE id=?", ("已完成", book_id))
-                    db.commit()
-                    logger.debug(f"ID: {book_id} 状态更新为已完成")
+                    curn.execute("UPDATE novels SET status=%s WHERE id=%s", ("已完成", book_id))
+                    logger.debug(f"此书状态更新为已完成", id=book_id)
                 elif status == "completed":
-                    curn.execute("UPDATE novels SET status=? WHERE id=?", ("已更新完成", book_id))
-                    db.commit()
-                    logger.debug(f"ID: {book_id} 状态更新为已更新完成")
+                    curn.execute("UPDATE novels SET status=%s WHERE id=%s", ("已更新完成", book_id))
+                    logger.debug(f"此书状态更新为已更新完成", id=book_id)
                 elif status == "failed":
-                    curn.execute("UPDATE novels SET status=? WHERE id=?", ("更新失败", book_id))
-                    db.commit()
-                    logger.debug(f"ID: {book_id} 状态更新为更新失败")
+                    curn.execute("UPDATE novels SET status=%s WHERE id=%s", ("更新失败", book_id))
+                    logger.debug(f"此书状态更新为更新失败", id=book_id)
                 else:
-                    curn.execute("UPDATE novels SET status=? WHERE id=?", ("失败", book_id))
-                    db.commit()
-                    logger.debug(f"ID: {book_id} 状态更新为失败")
+                    curn.execute("UPDATE novels SET status=%s WHERE id=%s", ("失败", book_id))
+                    logger.debug(f"此书状态更新为失败", id=book_id)
                 curn.close()
                 # 完成任务后，标记任务为完成状态
                 self.url_queue.task_done()
-                logger.debug(f"ID: {book_id} 任务结束 结束状态: {status}")
+                logger.debug(f"此书任务结束 结束状态: {status}", id=book_id)
             except queue.Empty:
                 time.sleep(5)
                 logger.trace("队列为空，等待5秒")
@@ -285,8 +297,8 @@ class Spider:
     def start(self):
         logger.info("爬虫工作启动")
         # 启动时检查数据库中是否有未完成的任务
-        curc = db.cursor()
-        curc.execute("SELECT id FROM novels WHERE status IN (?, ?, ?) ORDER BY ROWID",
+        curc = conn.cursor()
+        curc.execute("SELECT id FROM novels WHERE status IN (%s, %s, %s) ORDER BY num",
                      ("进行中", "等待中", "等待更新中"))
         rows = curc.fetchall()
         curc.close()
@@ -297,51 +309,49 @@ class Spider:
         # 有则添加到队列
         for row in rows:
             self.url_queue.put(book_id_to_url(row[0]))
-            logger.debug(f"ID: {row[0]} 已添加到队列")
+            logger.debug(f"已添加到队列", id=row[0])
         # 启动工作线程
         threading.Thread(target=self.worker, daemon=True).start()
 
     def add_url(self, book_id):
-        logger.debug(f"尝试添加ID: {book_id} 到队列")
-        cura = db.cursor()
-        cura.execute("SELECT status, finished FROM novels WHERE id=?", (book_id,))
+        logger.debug(f"尝试添加此书到队列", id=book_id)
+        cura = conn.cursor()
+        cura.execute("SELECT status, finished FROM novels WHERE id=%s", (book_id,))
         row = cura.fetchone()
         if row is None or row[0] == "失败":
             self.url_queue.put(book_id_to_url(book_id))
-            logger.debug(f"ID: {book_id} 已添加到队列")
-            cura.execute("INSERT OR REPLACE INTO novels (id, status) VALUES (?, ?)", (book_id, "等待中"))
-            db.commit()
+            logger.debug(f"此书已添加到队列", id=book_id)
+            cura.execute("REPLACE INTO novels (id, status) VALUES (%s, %s)", (book_id, "等待中"))
             cura.close()
             return "此书籍已添加到下载队列"
         else:
             # 如果已存在，检查书籍是否已完结
             if row[1] == 1:
                 cura.close()
-                logger.debug(f"ID: {book_id} 已存在且已完结")
+                logger.debug(f"此书已存在且已完结", id=book_id)
                 # 如果已完结，返回提示信息
                 return "此书籍已存在且已完结，请直接前往下载"
             elif row[0] == "等待中" or row[0] == "进行中" or row[0] == "等待更新中":
                 cura.close()
-                logger.debug(f"ID: {book_id} 已存在且正在下载")
+                logger.debug(f"此书已存在且正在下载", id=book_id)
                 # 如果正在下载，返回提示信息
                 return "此书籍已存在且正在下载（如果你需要查询，请在“类型”中选择“查询”而不是“添加”）"
             else:
-                cura.execute("SELECT last_update FROM novels WHERE id=?", (book_id,))
+                cura.execute("SELECT last_update FROM novels WHERE id=%s", (book_id,))
                 row = cura.fetchone()
                 last_update = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S.%f')
 
                 # 如果上次时间距现在小于3小时，返回提示
                 if datetime.now() - last_update < timedelta(hours=3):
                     cura.close()
-                    logger.debug(f"ID: {book_id} 已存在且上次更新距现在不足3小时")
+                    logger.debug(f"此书已存在且上次更新距现在不足3小时", id=book_id)
                     return "此书籍已存在且上次更新距现在不足3小时，请稍后再试"
 
                 # 如果未完结，返回提示信息并尝试更新
                 self.url_queue.put(book_id_to_url(book_id))
-                cura.execute("UPDATE novels SET status=? WHERE id=?", ("等待更新中", book_id))
-                db.commit()
+                cura.execute("UPDATE novels SET status=%s WHERE id=%s", ("等待更新中", book_id))
                 cura.close()
-                logger.debug(f"ID: {book_id} 已添加到队列 (等待更新中)")
+                logger.debug(f"此书已添加到队列 (等待更新中)", id=book_id)
                 return "此书籍已存在，正在尝试更新"
 
     def stop(self):
@@ -355,6 +365,26 @@ spider = Spider()
 spider.start()
 
 
+def check_config(func):
+    def wrapper(*args, **kwargs):
+        if config["webui"]["enable"]:
+            return func(*args, **kwargs)
+        else:
+            abort(404)
+    return wrapper
+
+
+@app.route('/')
+@check_config
+def index():
+    # 打开文件并修改内容
+    with open('web/index.html', 'r', encoding='utf-8') as file:
+        data = file.read()
+    # 将占位符替换为实际内容
+    html = re.sub('will be replaced', config["webui"]["download_url"], data)
+    return html
+
+
 @app.route('/api', methods=['POST'])
 @limiter.limit(f"{config['limiter']['api']['per_minute']}/minute;"
                f"{config['limiter']['api']['per_hour']}/hour;"
@@ -364,7 +394,6 @@ def api():
     # 判断是否在限时范围内
     now = datetime.utcnow() + timedelta(hours=8)
     if config["time_range"] == "false":
-        logger.debug("未设置时间范围")
         pass
     else:
         if not (start_hour <= now.hour < end_hour):
@@ -378,7 +407,7 @@ def api():
         logger.warning("请求缺少必要的json数据，返回400错误")
         return "Bad Request.The request is missing necessary json data.", 400
     if data['id'].isdigit():
-        logger.debug(f"ID: {data['id']} 是纯数字，将被直接使用")
+        logger.debug(f"用户输入是纯数字，将被直接使用", id=data['id'])
         pass
     else:
         if 'fanqienovel.com/page' in data['id']:
@@ -403,13 +432,13 @@ def api():
 
     # 如果'action'字段的值为'add'，则尝试将URL添加到队列中，并返回相应的信息和位置
     if data['action'] == 'add':
-        logger.debug(f"用户请求添加ID: {data['id']} 到队列")
+        logger.info(f"请求: 添加: {data['id']}", id=data['id'])
         book_id = data['id']
         message = spider.add_url(book_id)
         url = book_id_to_url(book_id)
         position = list(spider.url_queue.queue).index(url) + 1 if url in list(spider.url_queue.queue) else None
-        curq = db.cursor()
-        curq.execute("SELECT status, last_update FROM novels WHERE id=?", (book_id,))
+        curq = conn.cursor()
+        curq.execute("SELECT status, last_update FROM novels WHERE id=%s", (book_id,))
         row = curq.fetchone()
         curq.close()
         status = row[0] if row is not None else None
@@ -417,19 +446,17 @@ def api():
             last_update = row[1].split('.')[0] if row[1] is not None else None
         else:
             last_update = None
-        if last_update is not None:
-            status = status + " " + last_update.split(".")[0]
-        logger.debug(f"返回信息: {message} 位置: {position} 状态: {status}")
-        return jsonify({'message': message, 'position': position, 'status': status})
+        logger.debug(f"返回信息: {message} 位置: {position} 状态: {status}", id=data['id'])
+        return jsonify({'message': message, 'position': position, 'status': status, 'last_update': last_update})
 
     # 如果'action'字段的值为'query'，则检查URL是否在队列中，并返回相应的信息和位置或不存在的信息
     elif data['action'] == 'query':
-        logger.debug(f"用户请求查询ID: {data['id']} 的状态")
+        logger.debug(f"请求: 查询: {data['id']}", id=data['id'])
         book_id = data['id']
         url = book_id_to_url(book_id)
         position = list(spider.url_queue.queue).index(url) + 1 if url in list(spider.url_queue.queue) else None
-        curw = db.cursor()
-        curw.execute("SELECT status, last_update FROM novels WHERE id=?", (book_id,))
+        curw = conn.cursor()
+        curw.execute("SELECT status, last_update FROM novels WHERE id=%s", (book_id,))
         row = curw.fetchone()
         curw.close()
         status = row[0] if row is not None else None
@@ -437,10 +464,9 @@ def api():
             last_update = row[1].split('.')[0] if row[1] is not None else None
         else:
             last_update = None
-        if last_update is not None:
-            status = status + " " + last_update
-        logger.debug(f"返回信息: 状态: {status} 位置: {position}")
-        return jsonify({'exists': status is not None, 'position': position, 'status': status})
+        logger.debug(f"返回信息: 状态: {status} 位置: {position}", id=data['id'])
+        return jsonify({'exists': status is not None, 'position': position, 'status': status,
+                        'last_update': last_update})
 
     else:
         return "Bad Request.The value of ‘action’ can only be ‘add’ or ‘query’.", 400
@@ -452,7 +478,7 @@ def api():
                f"{config['limiter']['list']['per_day']}/day")  # 限制请求
 def file_list():
     logger.debug("用户请求文件列表")
-    folder_path = config["save_dir"]
+    folder_path = save_dir
     files = os.listdir(folder_path)
     # 按最后修改时间排序
     files.sort(key=lambda x: os.path.getmtime(os.path.join(folder_path, x)), reverse=True)
@@ -466,7 +492,7 @@ def file_list():
                f"{config['limiter']['download']['per_day']}/day")  # 限制请求
 def download_file(filename):
     logger.debug(f"用户请求下载文件: {filename}")
-    directory = os.path.abspath(config["save_dir"])
+    directory = os.path.abspath(save_dir)
     try:
         logger.debug(f"尝试返回文件: {filename}")
         return send_from_directory(directory, filename, as_attachment=True)
@@ -532,7 +558,7 @@ def manage(group, action):
         elif action == "status":
             return "正在运行" if spider.is_running else "已暂停"
         elif action == "update-config":
-            with open("config.json", "r", encoding='utf-8') as conf_u:
+            with open("data/config.json", "r", encoding='utf-8') as conf_u:
                 try:
                     config = json.load(conf_u)
                 except json.JSONDecodeError:
@@ -542,10 +568,10 @@ def manage(group, action):
             return "Bad Request.", 400
 
     elif group == "tasks":
-        curt = db.cursor()
+        curt = conn.cursor()
         if action == "list-new":
             tasks_dict = {}
-            curt.execute("SELECT id, status FROM novels ORDER BY ROWID DESC LIMIT 30", ())
+            curt.execute("SELECT id, status FROM novels ORDER BY num DESC LIMIT 30", ())
             for i, row in enumerate(curt.fetchall()):
                 tasks_dict[f'task{i}'] = {'id': row[0], 'status': row[1]}
             curt.close()
@@ -576,7 +602,7 @@ def manage(group, action):
             return "Bad Request.", 400
 
     elif group == "blacklist":
-        curb = db.cursor()
+        curb = conn.cursor()
         if action == "list":
             curb.execute("SELECT * FROM blacklist")
             rows = curb.fetchall()
@@ -586,17 +612,15 @@ def manage(group, action):
             ip = request.args["ip"]
             if "time" not in request.args:
                 unblock_time = datetime.now() + timedelta(hours=1)
-                curb.execute("INSERT OR REPLACE INTO blacklist VALUES (?, ?)",
+                curb.execute("REPLACE INTO blacklist VALUES (%s, %s)",
                              (ip, unblock_time.strftime('%Y-%m-%d %H:%M:%S.%f')))
-                db.commit()
                 curb.close()
                 return "已添加，解除时间为1小时后"
             else:
                 try:
                     unblock_time = datetime.now() + timedelta(hours=int(request.args["time"]))
-                    curb.execute("INSERT OR REPLACE INTO blacklist VALUES (?, ?)",
+                    curb.execute("REPLACE INTO blacklist VALUES (%s, %s)",
                                  (ip, unblock_time.strftime('%Y-%m-%d %H:%M:%S.%f')))
-                    db.commit()
                     curb.close()
                     return f"已添加，解除时间为{request.args['time']}小时后"
                 except ValueError:
@@ -604,14 +628,12 @@ def manage(group, action):
                     return "时间格式不正确"
         elif action == "remove":
             ip = request.args["ip"]
-            curb.execute("DELETE FROM blacklist WHERE ip=?", (ip,))
-            db.commit()
+            curb.execute("DELETE FROM blacklist WHERE ip=%s", (ip,))
             curb.close()
             return f"已移除 {ip}"
         elif action == "clear":
             # noinspection SqlWithoutWhere
             curb.execute("DELETE FROM blacklist")
-            db.commit()
             curb.close()
             return "已清空黑名单"
         else:
@@ -620,6 +642,12 @@ def manage(group, action):
 
     else:
         return "Bad Request.", 400
+
+
+# @app.route('/<path:filename>')
+# @check_config
+# def static_file(filename):
+#     return send_from_directory('web', filename)
 
 
 if __name__ == "__main__":
@@ -643,4 +671,3 @@ if __name__ == "__main__":
                 threaded=config["server"]["thread"],
                 debug=config["server"]["debug"]
                 )
-

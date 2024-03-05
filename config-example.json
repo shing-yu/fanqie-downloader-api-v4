@@ -3,6 +3,10 @@
   "wsgi": false,
   "reserve_proxy": false, "?reserve_proxy": "如果你使用了反向代理，请将该项改为‘true’，否则程序将出现错误",
   "cdn": false,
+  "webui": {
+    "enable": true,
+    "download_url": "https://example.com/"
+  }, "?webui": "webui的配置, download_url为你的下载地址",
   "log": {
     "level": "DEBUG",
     "console_level": "INFO",
@@ -22,13 +26,19 @@
       "force_https": false
     }
   },
-  "database": "api.db",
+  "mysql": {
+    "host": "127.0.0.1",
+    "port": 3306,
+    "user": "root",
+    "password": "",
+    "database": "fanqieapi"
+  },
   "administrator": {
     "enable": false,
     "password": "L147258963oOOi",
     "totp": {
       "enable": false,
-      "secret": "XXXXXXXXXXXXXXXX"
+      "secret": ""
     },
     "enable_list_all_tasks": false, "?enable_list_all_book": "允许此请求可能导致程序负载过大，请谨慎开启"
   },

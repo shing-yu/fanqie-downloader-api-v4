@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<title>番茄小说下载</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+html, body {
+  height: 95%;
+  width: 100%;
+}
+body {
+  font-family: Arial, sans-serif;
+  margin: 50px 0 0;
+  padding: 0;
+  background-color: #ffffff;
+  display: grid;
+  place-items: center;
+}
+
+.container {
+  width: 800px;
+  margin: auto;
+  padding: 20px;
+}
+
+.title {
+  margin-top: -100px;
+  color: #333;
+  text-align: center;
+  font-size: 36px;
+}
+
+/*form {*/
+/*  background-color: #fff;*/
+/*  padding: 20px;*/
+/*  border-radius: 5px;*/
+/*}*/
+
+label, select {
+  display: block;
+  margin-bottom: 20px;
+}
+
+.id_input {
+  width: 700px; /* 调整宽度 */
+  height: 40px; /* 调整高度 */
+  border: 2px solid #ccc; /* 设置边框样式和颜色 */
+  border-radius: 20px; /* 设置圆角半径 */
+  padding: 10px; /* 调整内边距 */
+  outline: none; /* 移除默认的轮廓样式 */
+  font-size: 16px; /* 设置字体大小 */
+  /* 外边距 */
+  /* 居中 */
+  display: block;
+  margin: -20px auto 20px;
+}
+.id_input:focus {
+  border-color: #007bff; /* 更改边框颜色 */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* 添加阴影效果 */
+}
+
+.tip {
+  font-size: 20px;
+  color: #333;
+  text-align: center;
+  margin-top: 50px;
+}
+
+.buttons {
+  text-align: center;
+}
+
+.button1 {
+  font-size: 18px;
+  background-color: #0088ce;
+  color: #fff;
+  padding: 20px;
+  cursor: pointer;
+  border-radius: 20px;
+  text-align: center;
+  margin-right: 20px;
+  width: 90px;
+  border: 2px solid #CCCCCC;
+}
+.button2 {
+  font-size: 18px;
+  background-color: #0088ce;
+  color: #fff;
+  padding: 20px;
+  cursor: pointer;
+  border-radius: 20px;
+  text-align: center;
+  width: 90px;
+  border: 2px solid #CCCCCC;
+}
+#goto {
+  font-size: 18px;
+  background-color: rgba(0, 136, 206, 0.7);
+  color: #fff;
+  padding: 20px;
+  cursor: pointer;
+  border-radius: 20px;
+  text-align: center;
+  margin-right: 20px;
+  width: 150px;
+  border: 2px solid #CCCCCC;
+  position: fixed;
+  top: 10px; /* 距离顶部的距离 */
+  right: 10px; /* 距离右侧的距离 */
+}
+#help {
+  font-size: 18px;
+  background-color: rgba(0, 136, 206, 0.7);
+  color: #fff;
+  padding: 20px;
+  cursor: pointer;
+  border-radius: 20px;
+  text-align: center;
+  margin-right: 20px;
+  width: 150px;
+  border: 2px solid #CCCCCC;
+  position: fixed;
+  top: 10px; /* 距离顶部的距离 */
+  left: 10px; /* 距离右侧的距离 */
+}
+#help:hover, #goto:hover, .button1:hover, .button2:hover {
+  background-color: #444;
+}
+
+#result_tip, #result {
+  font-size: 16px;
+}
+
+footer {
+  font-size: 18px;
+  color: #CCCCCC;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding: 10px 0;
+}
+
+#github_link {
+  color: #CCCCCC;
+}
+#github_link:hover {
+  color: #007bff;
+}
+
+.result {
+  background-color: #d6d6d6;
+  padding: 10px 20px;
+  border-radius: 5px;
+  margin-top: 20px;
+}
+.hidden {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .container {
+    width: 90%;
+  }
+  .title {
+    font-size: 24px;
+    margin-top: -20px;
+  }
+  .tip {
+    font-size: 16px;
+    margin-top: 20px;
+  }
+  .id_input {
+    width: 96%;
+  }
+  .button1, .button2 {
+      padding: 10px;
+      width: 80px;
+      margin-top: -20px;
+  }
+  #goto {
+    right: -10px;
+    padding: 10px;
+    width: 115px;
+  }
+  #help {
+    padding: 10px;
+    width: 100px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<button id="goto">去下载文件</button>
+<button id="help">使用帮助</button>
+
+<h1 class="title">番茄小说下载</h1>
+
+<form id="apiForm">
+  <label for="id" class="tip">书籍链接或ID：</label><br>
+  <input type="text" id="id" name="id" class="id_input"><br>
+  <div class="buttons">
+  <button class="button1" type="button" onclick="submitForm('add')">添加</button>
+  <button class="button2" type="button" onclick="submitForm('query')">查询</button>
+  </div>
+</form>
+
+<div id='output' class="result hidden">
+  <p id="result_tip"><b>结果:</b></p>
+  <p id="result"></p>
+</div>
+
+<footer>
+<p>v4.0.0 | Powered by <a href="https://github.com/shing-yu/fanqie-downloader-api-v4" id="github_link">fanqie-downloader-api-v4</a> </p>
+</footer>
+
+<script>
+  function submitForm(action) {
+
+    // let url = document.getElementById('url').value;
+    // 获取当前地址作为api地址
+    let url = window.location.origin + '/api';
+    console.log("api地址：", url);
+
+    let data = {
+      action: action,
+      id: document.getElementById('id').value
+    };
+
+    let requestClass = data.action; // 存储请求中的class字段
+
+   console.log("发送的数据：", data);
+
+   fetch(url, {
+     method: 'POST',
+     headers: {
+       'Content-Type': 'application/json'
+     },
+     body: JSON.stringify(data)
+   })
+   .then(response => {
+    if (!response.ok) {
+    // 如果发生错误，获取响应的文本
+    return response.text().then(errorText => {
+      throw new Error('HTTP error ' + response.status + ', ' + errorText);
+    });
+  }
+     console.log("收到的响应：", response);
+     return response.json();
+   })
+   .then(redata => {
+     console.log("解析后的数据：", redata);
+
+     let resultText = '';
+     if (redata.error) {
+        resultText = '错误：' + redata.error;
+      } else if (requestClass === 'add') { // 使用存储的requestClass变量
+        resultText = '消息：' + redata.message + '<br>' +
+                      (redata.position ? ('位置：' + redata.position + '<br>') : '') +
+                      (redata.status ? ('状态：' + redata.status) : '');
+      } else if (requestClass === 'query') { // 使用存储的requestClass变量
+        // noinspection JSUnresolvedReference
+       resultText = '存在：' + (redata.exists ? '是' : '否') + '<br>' +
+                      (redata.position ? ('位置：' + redata.position + '<br>') : '') +
+                      (redata.status ? ('状态：' + redata.status) : '');
+      }
+
+
+     console.log("显示的结果：", resultText);
+     document.getElementById('output').classList.remove('hidden');
+     document.getElementById('result').innerHTML = resultText;
+   })
+   .catch((error) => {
+  console.error('Error:', error);
+  document.getElementById('output').classList.remove('hidden');
+  document.getElementById('result').innerHTML = 'Error: ' + error.message;
+})
+  }
+
+</script>
+
+<script>
+  document.getElementById("goto").addEventListener("click", function() {
+    // URL to be opened in the new tab
+    // 后期替换
+    let url = "will be replaced";
+
+    // Open the URL in a new tab
+    window.open(url, "_blank");
+  });
+</script>
+
+
+</div>
+
+</body>
+</html>
