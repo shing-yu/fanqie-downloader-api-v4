@@ -32,7 +32,7 @@ docker run -d \
 
 配置文件内容说明请看 [# 配置文件说明](#配置文件说明)
 
-
+<br>
 
 ### 已有MySQL
 
@@ -58,7 +58,7 @@ docker run -d \
 
 配置文件内容说明请看 [# 配置文件说明](#配置文件说明)
 
-
+<br>
 
 ## 直接部署
 
@@ -87,7 +87,7 @@ cd fanqie-downloader-api-v4
 ④ 解压下载的压缩包至你想要保存项目的目录
 ⑤ 在目录中打开终端
 
-
+<br>
 
 ### 二、创建虚拟环境（可选）
 
@@ -112,7 +112,7 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-
+<br>
 
 ### 三、安装依赖并运行
 
@@ -127,7 +127,7 @@ pip install -r requirements.txt
 
 请参考 [# 配置文件说明](#配置文件说明)
 
-
+<br>
 
 **运行项目：**
 
@@ -136,7 +136,7 @@ python app.py
 # python3 app.py
 ```
 
-
+<br>
 
 ## 配置文件说明
 
