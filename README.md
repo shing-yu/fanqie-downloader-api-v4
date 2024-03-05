@@ -81,7 +81,7 @@ cd fanqie-downloader-api-v4
 
 **下载压缩包**
 
-① 访问项目 GitHub 页面: [your_project](https://github.com/your_username/your_project)  
+① 访问项目 GitHub 页面: [fanqie-downloader-api-v4](https://github.com/shing-yu/fanqie-downloader-api-v4)  
 ② 点击 "Clone or download" 按钮  
 ③ 选择 "Download ZIP"  
 ④ 解压下载的压缩包至你想要保存项目的目录  
@@ -195,7 +195,7 @@ python app.py
 | upload.ofb.tenant_id| OFB租户ID（启用需配置）（未实现）                                              | your_tenant_id |
 | upload.ofb.endpoint | 上传端点路径（未实现）                      | /Documents/    |
 
-
+<br>
 
 默认配置文件：
 
@@ -289,6 +289,3 @@ python app.py
 
 }
 ```
-
-
-
