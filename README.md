@@ -14,16 +14,18 @@
 
 ```shell
 docker run -d \
-  -e MYSQL_ROOT_PASSWORD=123456 \  # MySQL Root用户密码
-  -v ./mysql:/var/lib/mysql \  # 挂载MySQL数据目录
-  -v ./config.json:/app/data/config.json \  # 挂载程序配置文件
-  -v ./output:/app/data/output \  # 挂载文件输出目录
-  -v ./logs:/app/logs \  # 挂载日志文件夹
-  -p 5000:5000 \  # 暴露程序端口
-  -p 3306:3306 \  # 暴露MySQL端口
-  --name fanqie-downloader-api-v4 \  # 容器名称
-  shingyu/fanqie-downloader-api-v4:mysql  # 远程拉取
+  -e MYSQL_ROOT_PASSWORD=123456 \
+  -v ./mysql:/var/lib/mysql \
+  -v ./config.json:/app/data/config.json \
+  -v ./output:/app/data/output \
+  -v ./logs:/app/logs \
+  -p 5000:5000 \
+  -p 3306:3306 \
+  --name fanqie-downloader-api-v4 \
+  shingyu/fanqie-downloader-api-v4:mysql
 ```
+
+[# 参数说明](#参数说明)
 
 环境变量`MYSQL_ROOT_PASSWORD`的值将被设置为MySQL的root用户密码，可根据需要自行更改
 
@@ -43,21 +45,42 @@ docker run -d \
 
 ```shell
 docker run -d \
-  -v ./config.json:/app/data/config.json \  # 挂载程序配置文件
-  -v ./output:/app/data/output \  # 挂载文件输出目录
-  -v ./logs:/app/logs \  # 挂载日志文件夹
-  -p 5000:5000 \  # 暴露程序端口
-  --name fanqie-downloader-api-v4 \  # 容器名称
-  shingyu/fanqie-downloader-api-v4:nomysql  # 远程拉取
+  -v ./config.json:/app/data/config.json \
+  -v ./output:/app/data/output \
+  -v ./logs:/app/logs \
+  -p 5000:5000 \
+  --name fanqie-downloader-api-v4 \
+  shingyu/fanqie-downloader-api-v4:nomysql
 ```
 
-对于已有的MySQL服务的信息，需要在配置文件内`mysql`字段中填入相关信息
+[# 参数说明](#参数说明)
+
+**对于已有的MySQL服务的信息，需要在配置文件内`mysql`字段中填入相关信息**
 
 **（如果服务在本地，请注意docker访问主机的相关配置！）**
 
 挂载的源目录和配置文件路径及容器名称可根据需要与实际情况自行更改
 
 配置文件内容说明请看 [# 配置文件说明](#配置文件说明)
+
+<br>
+
+### 参数说明
+
+| 参数                                   | 说明                          |
+| -------------------------------------- | ----------------------------- |
+| -d                                     | 后台运行                      |
+| -e MYSQL_ROOT_PASSWORD=123456          | 设置MySQL初始密码，可自行修改 |
+| -v ./mysql:/var/lib/mysql              | 挂载MySQL数据库信息           |
+| -v ./config.json:/app/data/config.json | 挂载程序配置文件              |
+| -v ./output:/app/data/output           | 挂载程序输出目录              |
+| -v ./logs:/app/logs                    | 挂载程序日志目录              |
+| -p 5000:5000                           | 暴露程序端口                  |
+| -p 3306:3306                           | 暴露MySQL端口                 |
+| --name fanqie-downloader-api-v4        | 容器名称，可自行修改          |
+| shingyu/fanqie-downloader-api-v4       | 从docker hub拉取镜像          |
+
+挂载参数和端口参数可根据需求与实际情况自行调整
 
 <br>
 
