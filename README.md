@@ -18,6 +18,7 @@ docker run -d \
   -v ./mysql:/var/lib/mysql \  # 挂载MySQL数据目录
   -v ./config.json:/app/data/config.json \  # 挂载程序配置文件
   -v ./output:/app/data/output \  # 挂载文件输出目录
+  -v ./logs:/app/logs \  # 挂载日志文件夹
   -p 5000:5000 \  # 暴露程序端口
   -p 3306:3306 \  # 暴露MySQL端口
   --name fanqie-downloader-api-v4 \  # 容器名称
@@ -44,6 +45,7 @@ docker run -d \
 docker run -d \
   -v ./config.json:/app/data/config.json \  # 挂载程序配置文件
   -v ./output:/app/data/output \  # 挂载文件输出目录
+  -v ./logs:/app/logs \  # 挂载日志文件夹
   -p 5000:5000 \  # 暴露程序端口
   --name fanqie-downloader-api-v4 \  # 容器名称
   shingyu/fanqie-downloader-api-v4:nomysql  # 远程拉取
