@@ -139,7 +139,7 @@ python app.py
 
 ## 配置文件说明
 
-使用方式：复制config-example.json并重命名为config.json，然后修改为你自己的配置
+使用方式：复制/下载[config-example.json](https://github.com/shing-yu/fanqie-downloader-api-v4/blob/main/config-example.json)文件，并重命名为config.json，然后修改为你自己的配置
 
 | 属性              | 说明                                                                                   | 默认值         |
 |-------------------|----------------------------------------------------------------------------------------|----------------|
