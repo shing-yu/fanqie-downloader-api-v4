@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>使用帮助</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+h1, h2, h3 {
+    color: #333;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    margin-bottom: 20px;
+}
+
+.warning {
+    color: #dc3545;
+}
+
+@media screen and (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+}
+</style>
+</head>
+<body>
+<h1 id="使用帮助">使用帮助</h1>
+<p>本网站基于
+	<a href="https://github.com/shing-yu/fanqie-downloader-api-v4">fanqie-downloader-api-v4</a>部署
+</p>
+<p>如果你也想创建自己的部署，请看项目的Readme文档或
+	<a href="https://www.shingyu.cn/posts/b4de337aa505/">这里</a>
+</p>
+
+<div class="container">
+    <h2 id="一、获取书籍链接或id">一、获取书籍链接或ID</h2>
+    <h3 id="手机用户获取链接：">手机用户获取链接：</h3>
+    <ol>
+        <li>
+            <p>打开“番茄免费小说”APP</p>
+        </li>
+        <li>
+            <p>找到你想要下载的小说</p>
+        </li>
+        <li>
+            <p>进入阅读界面或详情页</p>
+        </li>
+        <li>
+            <p>如果是阅读界面，点击页面右上方分享按钮；如果是详情页，点击右上角三个点的按钮</p>
+        </li>
+        <li>
+            <p>分享到QQ或者微信，任何人都可以，可以分享给自己</p>
+        </li>
+        <li>
+            <p>点击“留在QQ/微信”</p>
+        </li>
+    </ol>
+    <p>（小技巧：如果分享到QQ-我的电脑，则链接会自动显示，长按复制即可，无需进行7-10）</p>
+    <ol start="7">
+	<li>
+		<p>找到刚刚分享的卡片链接</p>
+	</li>
+	<li>
+		<p>点击进入</p>
+	</li>
+	<li>
+		<p>点击右上角三点按钮</p>
+	</li>
+	<li>
+		<p>点击复制链接</p>
+	</li>
+</ol>
+
+</div>
+
+<div class="container">
+    <h3 id="电脑用户获取链接：">电脑用户获取链接：</h3>
+<p class="warning">
+	<strong>警告：网页版为没有电脑的手机用户设计，且资源有限需付费，只有基础功能；如果你有电脑并可运行程序，请使用程序下载</strong>
+</p>
+<ol>
+	<li>进入
+		<a href="https://fanqienovel.com">番茄免费小说官网</a>
+	</li>
+	<li>通过搜索或其他方式找到想要下载的小说</li>
+	<li>点击进入详情页</li>
+	<li>浏览器上方地址栏，选择并复制链接</li>
+</ol>
+</div>
+
+<div class="container">
+    <h3 id="如何获取id将链接转换为id">如何获取ID/将链接转换为ID</h3>
+    <p>尽管程序目前添加/查询任务均已经支持直接使用链接</p>
+    <p>但下载界面
+        <strong>可能仍然需要ID</strong>才能找到你下载的小说（根据具体部署情况不同有所区别）
+    </p>
+    <p>获取ID前，你需要先通过上面的两步获取链接</p>
+    <h4 id="自动转换：">自动转换：</h4>
+    <p>你可以通过在此粘贴链接，然后点击提交按钮将链接转换为ID：</p>
+    <p>占位</p>
+    <h4 id="手动转换：">手动转换：</h4>
+    <p>不论是哪种链接，其中均包含ID信息，你可以通过以下方式找到</p>
+    <p>对于手机端分享链接：</p>
+    <p>在链接中找到
+        <code>book_id=</code> ，在此
+        <strong>后面</strong>（不包括）的一串
+        <strong>数字</strong> 便是ID，一直到“&amp;”符号前（不包括）
+    </p>
+    <p>对于电脑端详情页链接：</p>
+    <p>链接中的一串
+        <strong>连续</strong> 数字即是ID
+    </p>
+    <p>具体来说，在“/page/”后面和“?”（如有）前面</p>
+
+</div>
+
+<div class="container">
+    <h2>二、填入并下载</h2>
+    <p>将获取到的链接或ID填入到下载网页。</p>
+    <p>点击 “添加” 以提交下载任务。</p>
+    <p><b>注意：网页版下载器为队列模式，即多人提交的小说会排队一个一个下载，所以可能需要等待一段时间，你可以通过点击“查询”按钮获取排队及下载信息</b></p>
+    <p>当点击“查询”按钮，状态显示为<b>“已完成”</b> <b>“已更新完成”</b>，即可点击右上角的<b>“去下载文件”</b>按钮，前往网页部署者提供的文件下载网站下载小说文件。</p>
+
+</div>
+
+<script>
+// JavaScript for functionality can be added here
+</script>
+
+</body>
+</html>

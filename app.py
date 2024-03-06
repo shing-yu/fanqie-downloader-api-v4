@@ -33,6 +33,12 @@ if os.getenv("DOCKER_MODE") == "True":
             config = json.load(conf)
         except json.JSONDecodeError as conf_e:
             raise json.JSONDecodeError("配置文件格式不正确", conf_e.doc, conf_e.pos)
+
+    # docker模式忽略原配置
+    config["save_dir"] = save_dir
+    config["server"]["port"] = 5000
+    config["server"]["host"] = "0.0.0.0"
+
 else:
     with open("config.json", "r", encoding='utf-8') as conf:
         try:
@@ -374,18 +380,20 @@ def check_config(func):
     return wrapper
 
 
-@app.route('/')
+@app.route('/', methods=['GET'], endpoint='index')
+@app.route('/<path:filename>', methods=['GET'], endpoint='other')
 @check_config
-def index():
-    # 打开文件并修改内容
-    with open('web/index.html', 'r', encoding='utf-8') as file:
-        data = file.read()
-    # 将占位符替换为实际内容
-    html = re.sub('will be replaced', config["webui"]["download_url"], data)
-    return html
+def index(filename='index.html'):
+    # 替换首页中的占位符
+    if filename == 'index.html':
+        with open(os.path.join('web', filename), 'r', encoding='utf-8') as f:
+            html = f.read()
+            html = re.sub("download page url", config["webui"]["download_url"], html)
+        return html
+    return send_from_directory('web', filename)
 
 
-@app.route('/api', methods=['POST'])
+@app.route('/api', methods=['POST'], endpoint='api')
 @limiter.limit(f"{config['limiter']['api']['per_minute']}/minute;"
                f"{config['limiter']['api']['per_hour']}/hour;"
                f"{config['limiter']['api']['per_day']}/day")  # 限制请求
@@ -472,7 +480,7 @@ def api():
         return "Bad Request.The value of ‘action’ can only be ‘add’ or ‘query’.", 400
 
 
-@app.route('/list')
+@app.route('/list', methods=['GET'], endpoint='list')
 @limiter.limit(f"{config['limiter']['list']['per_minute']}/minute;"
                f"{config['limiter']['list']['per_hour']}/hour;"
                f"{config['limiter']['list']['per_day']}/day")  # 限制请求
@@ -486,7 +494,7 @@ def file_list():
     return '<html><body>{}</body></html>'.format('<br>'.join(file_links))
 
 
-@app.route('/download/<path:filename>')
+@app.route('/download/<path:filename>', methods=['GET'], endpoint='download')
 @limiter.limit(f"{config['limiter']['download']['per_minute']}/minute;"
                f"{config['limiter']['download']['per_hour']}/hour;"
                f"{config['limiter']['download']['per_day']}/day")  # 限制请求
@@ -502,7 +510,7 @@ def download_file(filename):
 
 
 @logger.catch
-@app.route('/manage/<group>/<action>', methods=['GET', 'POST'])
+@app.route('/manage/<group>/<action>', methods=['GET', 'POST'], endpoint='manage')
 def manage(group, action):
     global config
     logger.info(f"管理员请求管理接口，组: {group} 动作: {action}")

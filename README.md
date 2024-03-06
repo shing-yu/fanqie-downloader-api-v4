@@ -6,22 +6,25 @@
 
 ## Docker部署（推荐）
 
+p.s. 如果镜像拉取缓慢，可参考 [配置镜像加速器_容器镜像服务(ACR)-阿里云帮助中心 (aliyun.com)](https://help.aliyun.com/zh/acr/user-guide/accelerate-the-pulls-of-docker-official-images) 进行加速
+
 ### 无MySQL
 
 如果你没有MySQL服务，或想新建一个，可以使用带有`mysql`或`latest`标签的docker镜像，容器内自带MySQL
 
-运行命令：
+部署命令：
 
 ```shell
-docker run -d \
+sudo docker run -d \
   -e MYSQL_ROOT_PASSWORD=123456 \
-  -v ./mysql:/var/lib/mysql \
-  -v ./config.json:/app/data/config.json \
-  -v ./output:/app/data/output \
-  -v ./logs:/app/logs \
+  -v /opt/fdapiv4/mysql:/var/lib/mysql \
+  -v /opt/fdapiv4/config.json:/app/data/config.json \
+  -v /opt/fdapiv4/output:/app/data/output \
+  -v /opt/fdapiv4/logs:/app/logs \
   -p 5000:5000 \
   -p 3306:3306 \
-  --name fanqie-downloader-api-v4 \
+  --name fdapiv4 \
+  --restart unless-stopped \
   shingyu/fanqie-downloader-api-v4:mysql
 ```
 
@@ -41,15 +44,16 @@ docker run -d \
 
 如果你已有部署完成的MySQL服务，可以使用带有`nomysql`标签的镜像
 
-运行命令：
+部署命令：
 
 ```shell
-docker run -d \
-  -v ./config.json:/app/data/config.json \
-  -v ./output:/app/data/output \
-  -v ./logs:/app/logs \
+sudo docker run -d \
+  -v /opt/fdapiv4/config.json:/app/data/config.json \
+  -v /opt/fdapiv4/output:/app/data/output \
+  -v /opt/fdapiv4/logs:/app/logs \
   -p 5000:5000 \
-  --name fanqie-downloader-api-v4 \
+  --name fdapiv4 \
+  --restart unless-stopped \
   shingyu/fanqie-downloader-api-v4:nomysql
 ```
 
@@ -65,20 +69,43 @@ docker run -d \
 
 <br>
 
+### 容器管理命令
+
+- 启动
+
+```shell
+sudo docker start fdapiv4
+```
+
+- 停止
+
+```shell
+sudo docker stop fdapiv4
+```
+
+- 重启
+
+```shell
+sudo docker restart fdapiv4
+```
+
+<br>
+
 ### 参数说明
 
-| 参数                                   | 说明                          |
-| -------------------------------------- | ----------------------------- |
-| -d                                     | 后台运行                      |
-| -e MYSQL_ROOT_PASSWORD=123456          | 设置MySQL初始密码，可自行修改 |
-| -v ./mysql:/var/lib/mysql              | 挂载MySQL数据库信息           |
-| -v ./config.json:/app/data/config.json | 挂载程序配置文件              |
-| -v ./output:/app/data/output           | 挂载程序输出目录              |
-| -v ./logs:/app/logs                    | 挂载程序日志目录              |
-| -p 5000:5000                           | 暴露程序端口                  |
-| -p 3306:3306                           | 暴露MySQL端口                 |
-| --name fanqie-downloader-api-v4        | 容器名称，可自行修改          |
-| shingyu/fanqie-downloader-api-v4       | 从docker hub拉取镜像          |
+| 参数                                              | 说明                          |
+| ------------------------------------------------- | ----------------------------- |
+| -d                                                | 后台运行                      |
+| -e MYSQL_ROOT_PASSWORD=123456                     | 设置MySQL初始密码，可自行修改 |
+| -v /opt/fdapiv4/mysql:/var/lib/mysql              | 挂载MySQL数据库信息           |
+| -v /opt/fdapiv4/config.json:/app/data/config.json | 挂载程序配置文件              |
+| -v /opt/fdapiv4/output:/app/data/output           | 挂载程序输出目录              |
+| -v /opt/fdapiv4/logs:/app/logs                    | 挂载程序日志目录              |
+| -p 5000:5000                                      | 暴露程序端口                  |
+| -p 3306:3306                                      | 暴露MySQL端口                 |
+| --name fdapiv4                                    | 容器名称，可自行修改          |
+| --restart unless-stopped                          | 随系统启动，非主动退出时重启  |
+| shingyu/fanqie-downloader-api-v4                  | 从docker hub拉取镜像          |
 
 挂载参数和端口参数可根据需求与实际情况自行调整
 
@@ -178,15 +205,15 @@ python app.py
 | log.filepath      | 日志文件路径                                                                           | logs/api.log   |
 | log.maxSize       | 日志文件最大大小                                                                       | 20 MB          |
 | log.backupCount   | 日志文件备份数量                                                                       | 20             |
-| server.port       | 服务器端口                                                                             | 5000           |
-| server.host       | 监听地址                                                                               | 0.0.0.0        |
+| server.port       | 服务器端口（docker部署无效）                                                              | 5000           |
+| server.host       | 监听地址（docker部署无效）                                                                   | 0.0.0.0        |
 | server.debug      | 是否启用调试模式                                                                       | false          |
 | server.thread     | 是否启用多线程模式                                                                     | false          |
 | server.https.enable| 是否启用HTTPS                                                             | false          |
 | server.https.ssl_cert| HTTPS SSL证书路径（启用需配置）                                                             | ""             |
 | server.https.ssl_key | HTTPS SSL密钥路径（启用需配置）                                                            | ""             |
 | server.https.force_https| 是否强制使用HTTPS                                                          | false          |
-| mysql.host        | MySQL主机地址                                                                       | 127.0.0.1             |
+| mysql.host        | MySQL主机地址                                                                     | 127.0.0.1             |
 | mysql.port        | MySQL端口号                                                                            | 3306           |
 | mysql.user        | MySQL用户名                                                                            | root           |
 | mysql.password    | MySQL密码                                                                              | _空_          |
@@ -218,6 +245,8 @@ python app.py
 | upload.ofb.client_secret| OFB客户端密钥（启用需配置）（未实现）                                         | your_client_secret |
 | upload.ofb.tenant_id| OFB租户ID（启用需配置）（未实现）                                              | your_tenant_id |
 | upload.ofb.endpoint | 上传端点路径（未实现）                      | /Documents/    |
+
+对于 `mysql.host` ，如果使用docker部署，请考虑使用IP地址代替主机名，否则可能由于DNS问题导致访问速度极慢报错。
 
 <br>
 

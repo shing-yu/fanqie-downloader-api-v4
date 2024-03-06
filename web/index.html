@@ -73,7 +73,7 @@ label, select {
 
 .button1 {
   font-size: 18px;
-  background-color: #0088ce;
+  background-color: #007bff;
   color: #fff;
   padding: 20px;
   cursor: pointer;
@@ -85,7 +85,7 @@ label, select {
 }
 .button2 {
   font-size: 18px;
-  background-color: #0088ce;
+  background-color: #007bff;
   color: #fff;
   padding: 20px;
   cursor: pointer;
@@ -96,7 +96,7 @@ label, select {
 }
 #goto {
   font-size: 18px;
-  background-color: rgba(0, 136, 206, 0.7);
+  background-color: rgba(0, 123, 255, 0.7);
   color: #fff;
   padding: 20px;
   cursor: pointer;
@@ -111,7 +111,7 @@ label, select {
 }
 #help {
   font-size: 18px;
-  background-color: rgba(0, 136, 206, 0.7);
+  background-color: rgba(0, 123, 255, 0.7);
   color: #fff;
   padding: 20px;
   cursor: pointer;
@@ -288,7 +288,14 @@ footer {
   document.getElementById("goto").addEventListener("click", function() {
     // URL to be opened in the new tab
     // 后期替换
-    let url = "will be replaced";
+    let url = "download page url";
+
+    // Open the URL in a new tab
+    window.open(url, "_blank");
+  });
+  document.getElementById("help").addEventListener("click", function() {
+    // URL to be opened in the new tab
+    let url = "/help.html";
 
     // Open the URL in a new tab
     window.open(url, "_blank");
