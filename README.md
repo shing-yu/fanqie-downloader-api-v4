@@ -45,9 +45,8 @@ docker run -d \
   -v ./config.json:/app/data/config.json \  # 挂载程序配置文件
   -v ./output:/app/data/output \  # 挂载文件输出目录
   -p 5000:5000 \  # 暴露程序端口
-  -p 3306:3306 \  # 暴露MySQL端口
   --name fanqie-downloader-api-v4 \  # 容器名称
-  shingyu/fanqie-downloader-api-v4:mysql  # 远程拉取
+  shingyu/fanqie-downloader-api-v4:nomysql  # 远程拉取
 ```
 
 对于已有的MySQL服务的信息，需要在配置文件内`mysql`字段中填入相关信息
