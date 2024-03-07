@@ -8,7 +8,8 @@ WORKDIR /app
 COPY . /app
 
 # 安装依赖
-RUN pip install --no-cache-dir -r /app/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip3 install --no-cache-dir -r /app/requirements.txt
+#RUN pip3 install --no-cache-dir -r /app/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 设置环境变量
 ENV PYTHONUNBUFFERED=1

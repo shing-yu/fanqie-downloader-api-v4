@@ -4,19 +4,19 @@ FROM mysql:8.0-debian
 WORKDIR /app
 
 # APT换源
-RUN rm -rf /etc/apt/sources.list.d/*
-# nosec
-RUN echo "deb http://mirrors.aliyun.com/debian/ buster main contrib non-free" > /etc/apt/sources.list \
-    && echo "deb http://mirrors.aliyun.com/debian/ buster-updates main contrib non-free" >> /etc/apt/sources.list \
-    && echo "deb http://mirrors.aliyun.com/debian/ buster-backports main contrib non-free" >> /etc/apt/sources.list \
-    && echo "deb http://mirrors.aliyun.com/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list
+#RUN rm -rf /etc/apt/sources.list.d/*
+#RUN echo "deb http://mirrors.aliyun.com/debian/ buster main contrib non-free" > /etc/apt/sources.list \
+#    && echo "deb http://mirrors.aliyun.com/debian/ buster-updates main contrib non-free" >> /etc/apt/sources.list \
+#    && echo "deb http://mirrors.aliyun.com/debian/ buster-backports main contrib non-free" >> /etc/apt/sources.list \
+#    && echo "deb http://mirrors.aliyun.com/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list
 
 # 安装证书
 RUN apt-get update && apt-get install -y ca-certificates
 
 # 安装Python
 RUN apt-get install -y python3 python3-pip
-RUN python3 -m pip install --upgrade pip -i https://pypi.tuna.tsinghua.edu.cn/simple
+RUN python3 -m pip install --upgrade pip
+#RUN python3 -m pip install --upgrade pip -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 复制文件
 COPY . /app
@@ -25,7 +25,8 @@ RUN chmod +x /app/entrypoint.sh
 RUN chmod +x /app/start.sh
 
 # 安装依赖
-RUN pip3 install --no-cache-dir -r /app/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip3 install --no-cache-dir -r /app/requirements.txt
+#RUN pip3 install --no-cache-dir -r /app/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 解决MySQL DNS解析问题
 RUN echo "skip-name-resolve" >> /etc/mysql/my.cnf
