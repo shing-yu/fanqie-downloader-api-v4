@@ -193,58 +193,58 @@ python app.py
 
 使用方式：复制/下载[config-example.json](https://github.com/shing-yu/fanqie-downloader-api-v4/blob/main/config-example.json)文件，并重命名为config.json，然后修改为你自己的配置
 
-| 属性              | 说明                                                                                   | 默认值         |
-|-------------------|----------------------------------------------------------------------------------------|----------------|
-| wsgi              | 是否使用了WSGI服务器（不同行为）                                             | false          |
-| cors                                | 是否允许跨域资源访问                    | false          |
-| cdn               | 是否使用了CDN（不同行为）                                                                  | false          |
-| webui.enable      | 是否启用Web用户界面                                                                     | true           |
-| webui.download_url | 你的下载地址，用于引导用户前往下载 | https://example.com/ |
-| log.level         | 日志文件记录级别                                                                           | DEBUG          |
-| log.console_level | 控制台日志输出级别                                                                     | INFO           |
-| log.filepath      | 日志文件路径                                                                           | logs/api.log   |
-| log.maxSize       | 日志文件最大大小                                                                       | 20 MB          |
-| log.backupCount   | 日志文件备份数量                                                                       | 20             |
-| server.port       | 服务器端口（docker部署无效）                                                              | 5000           |
-| server.host       | 监听地址（docker部署无效）                                                                   | 0.0.0.0        |
-| server.debug      | 是否启用调试模式                                                                       | false          |
-| server.thread     | 是否启用多线程模式                                                                     | false          |
-| server.https.enable| 是否启用HTTPS                                                             | false          |
-| server.https.ssl_cert| HTTPS SSL证书路径（启用需配置）                                                             | ""             |
-| server.https.ssl_key | HTTPS SSL密钥路径（启用需配置）                                                            | ""             |
-| server.https.force_https| 是否强制使用HTTPS                                                          | false          |
+| 属性              | 说明                                                                                   | 默认值                   |
+|-------------------|----------------------------------------------------------------------------------------|-----------------------|
+| wsgi              | 是否使用了WSGI服务器（不同行为）                                             | false                 |
+| cors                                | 是否允许跨域资源访问                    | false                 |
+| cdn               | 是否使用了CDN（不同行为）                                                                  | false                 |
+| webui.enable      | 是否启用Web用户界面                                                                     | true                  |
+| webui.download_url | 你的下载地址，用于引导用户前往下载 | https://example.com/  |
+| log.level         | 日志文件记录级别                                                                           | DEBUG                 |
+| log.console_level | 控制台日志输出级别                                                                     | INFO                  |
+| log.filepath      | 日志文件路径                                                                           | logs/api.log          |
+| log.maxSize       | 日志文件最大大小                                                                       | 20 MB                 |
+| log.backupCount   | 日志文件备份数量                                                                       | 20                    |
+| server.port       | 服务器端口（docker部署无效）                                                              | 5000                  |
+| server.host       | 监听地址（docker部署无效）                                                                   | 0.0.0.0               |
+| server.debug      | 是否启用调试模式                                                                       | false                 |
+| server.thread     | 是否启用多线程模式                                                                     | false                 |
+| server.https.enable| 是否启用HTTPS                                                             | false                 |
+| server.https.ssl_cert| HTTPS SSL证书路径（启用需配置）                                                             | ""                    |
+| server.https.ssl_key | HTTPS SSL密钥路径（启用需配置）                                                            | ""                    |
+| server.https.force_https| 是否强制使用HTTPS                                                          | false                 |
 | mysql.host        | MySQL主机地址                                                                     | 127.0.0.1             |
-| mysql.port        | MySQL端口号                                                                            | 3306           |
-| mysql.user        | MySQL用户名                                                                            | root           |
-| mysql.password    | MySQL密码                                                                              | _空_          |
+| mysql.port        | MySQL端口号                                                                            | 3306                  |
+| mysql.user        | MySQL用户名                                                                            | root                  |
+| mysql.password    | MySQL密码                                                                              | _空_                   |
 | mysql.database    | MySQL数据库名称                                                                 | fdapiv4               |
-| administrator.enable| 是否启用管理员接口                                                                    | false          |
-| administrator.password| 管理员密码（启用需配置）                                                                  | L147258963oOOi|
-| administrator.totp.enable| 是否对管理行为二次验证                                           | false          |
-| administrator.totp.secret| 双因素认证密钥（启用需配置）                                                             | _空_                  |
-| administrator.enable_list_all_tasks| 是否允许列出所有任务                                                               | false          |
-| save_dir          | 下载保存目录（docker部署无效）                                                           | output         |
-| encoding          | 编码方式                                                                               | utf-8          |
+| administrator.enable| 是否启用管理员接口                                                                    | false                 |
+| administrator.password| 管理员密码（启用需配置）                                                                  | L147258963oOOi        |
+| administrator.totp.enable| 是否对管理行为二次验证                                           | false                 |
+| administrator.totp.secret| 双因素认证密钥（启用需配置）                                                             | _空_                   |
+| administrator.enable_list_all_tasks| 是否允许列出所有任务                                                               | false                 |
+| save_dir          | 下载保存目录（docker部署无效）                                                           | output                |
+| encoding          | 编码方式                                                                               | utf-8                 |
 | filename_format   | 文件名格式                                                                             | {title}_{book_id}.txt |
-| speed_limit       | 下载速度限制（最低0.25，单位秒）                                                        | 0.5            |
-| time_range        | 可用时间范围限制（如”8-18“）                                                                | false          |
-| limiter.enable    | 是否启用限速器                                                                         | true           |
+| speed_limit       | 下载速度限制（最低0.25，单位秒）                                                        | 0.5                   |
+| time_range        | 可用时间范围限制（如”8-18“）                                                                | false                 |
+| limiter.enable    | 是否启用限速器                                                                         | true                  |
 | limiter.\*.per_minute | 每分钟请求限制数量                                                               |                       |
-| limiter.\*.per_hour | 每小时请求限制数量                                                                 |             |
-| limiter.\*.per_day | 每日请求限制数量                       |             |
-| upload.base_dir   | 上传基础目录                                                                           | fqapiv4/output |
-| upload.cos.enable | 是否启用腾讯云对象存储                                                                 | false          |
-| upload.cos.secret_id| 腾讯云对象存储SecretId（启用需配置）                                                       | ""             |
-| upload.cos.secret_key| 腾讯云对象存储SecretKey（启用需配置）                                                      | ""             |
-| upload.cos.region  | 腾讯云对象存储地区（启用需配置）                                                              | ap-xxxxxxxx   |
-| upload.cos.bucket  | 腾讯云对象存储Bucket名称（启用需配置）                                                       | xxx-0000000000|
-| upload.cos.scheme  | 腾讯云对象存储访问协议                                                                 | https          |
-| upload.cos.token   | 腾讯云对象存储Token                                                                    | null           |
-| upload.ofb.enable | 是否启用OneDrive for Business（未实现）                                                    | false          |
-| upload.ofb.client_id| OFB客户端ID（启用需配置）（未实现）                                            | your_client_id |
-| upload.ofb.client_secret| OFB客户端密钥（启用需配置）（未实现）                                         | your_client_secret |
-| upload.ofb.tenant_id| OFB租户ID（启用需配置）（未实现）                                              | your_tenant_id |
-| upload.ofb.endpoint | 上传端点路径（未实现）                      | /Documents/    |
+| limiter.\*.per_hour | 每小时请求限制数量                                                                 |                       |
+| limiter.\*.per_day | 每日请求限制数量                       |                       |
+| upload.base_dir   | 上传基础目录                                                                           | fdapiv4/output        |
+| upload.cos.enable | 是否启用腾讯云对象存储                                                                 | false                 |
+| upload.cos.secret_id| 腾讯云对象存储SecretId（启用需配置）                                                       | ""                    |
+| upload.cos.secret_key| 腾讯云对象存储SecretKey（启用需配置）                                                      | ""                    |
+| upload.cos.region  | 腾讯云对象存储地区（启用需配置）                                                              | ap-xxxxxxxx           |
+| upload.cos.bucket  | 腾讯云对象存储Bucket名称（启用需配置）                                                       | xxx-0000000000        |
+| upload.cos.scheme  | 腾讯云对象存储访问协议                                                                 | https                 |
+| upload.cos.token   | 腾讯云对象存储Token                                                                    | null                  |
+| upload.ofb.enable | 是否启用OneDrive for Business（未实现）                                                    | false                 |
+| upload.ofb.client_id| OFB客户端ID（启用需配置）（未实现）                                            | your_client_id        |
+| upload.ofb.client_secret| OFB客户端密钥（启用需配置）（未实现）                                         | your_client_secret    |
+| upload.ofb.tenant_id| OFB租户ID（启用需配置）（未实现）                                              | your_tenant_id        |
+| upload.ofb.endpoint | 上传端点路径（未实现）                      | /Documents/           |
 
 对于 `mysql.host` ，如果使用docker部署，请考虑使用IP地址代替主机名，否则可能由于DNS问题导致访问速度极慢报错。
 
@@ -320,7 +320,7 @@ python app.py
     }
   },
   "upload": {
-    "base_dir": "fqapiv4/output",
+    "base_dir": "fdapiv4/output",
     "cos": {
       "enable": false,
       "secret_id": "",
