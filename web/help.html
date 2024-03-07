@@ -39,6 +39,24 @@ a:hover {
         padding: 10px;
     }
 }
+
+#linkInput {
+    padding: 10px;
+    width: calc(100% - 110px); /* 考虑按钮的宽度 */
+    margin-right: 10px;
+}
+
+#convertButton {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+#convertButton:hover {
+    background-color: #0056b3;
+}
 </style>
 </head>
 <body>
@@ -114,8 +132,10 @@ a:hover {
     </p>
     <p>获取ID前，你需要先通过上面的两步获取链接</p>
     <h4 id="自动转换：">自动转换：</h4>
-    <p>你可以通过在此粘贴链接，然后点击提交按钮将链接转换为ID：</p>
-    <p>占位</p>
+    <p>你可以通过在此粘贴链接，然后点击转换按钮将链接转换为ID：</p>
+    <label for="linkInput"></label>
+    <input type="text" id="linkInput" placeholder="粘贴链接">
+    <button onclick="convertLink()" id="convertButton">转换</button>
     <h4 id="手动转换：">手动转换：</h4>
     <p>不论是哪种链接，其中均包含ID信息，你可以通过以下方式找到</p>
     <p>对于手机端分享链接：</p>
@@ -142,7 +162,39 @@ a:hover {
 </div>
 
 <script>
-// JavaScript for functionality can be added here
+function convertLink() {
+    let linkInput = document.getElementById("linkInput");
+    let link = linkInput.value;
+    let id;
+
+    if (/^\d+$/.test(link)) {
+        // 输入是纯数字，直接使用
+        id = link;
+    } else if (link.includes('fanqienovel.com/page')) {
+        // PC端目录页链接的ID提取
+        let desktopPattern = /page\/(\d+)/;
+        let desktopMatch = link.match(desktopPattern);
+        if (desktopMatch) {
+            id = desktopMatch[1];
+        } else {
+            id = "无法提取ID";
+        }
+    } else if (link.includes('changdunovel.com')) {
+        // 移动端分享链接的ID提取
+        let mobilePattern = /book_id=(\d+)/;
+        let mobileMatch = link.match(mobilePattern);
+        if (mobileMatch) {
+            id = mobileMatch[1];
+        } else {
+            id = "无法提取ID";
+        }
+    } else {
+        id = "无法识别的链接";
+    }
+
+    // 将提取的ID替换输入框中的内容
+    linkInput.value = id;
+}
 </script>
 
 </body>
