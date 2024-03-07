@@ -8,7 +8,7 @@ import queue
 import threading
 import time
 from src.fanqie_api import download, update
-from flask import Flask, request, jsonify, make_response, send_from_directory, abort
+from flask import Flask, request, jsonify, make_response, abort, render_template, send_from_directory
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from datetime import datetime, timedelta
@@ -75,7 +75,7 @@ logger.add(config["log"]["filepath"], rotation=config["log"]["maxSize"], level=c
 logger.add(sys.stdout, level=config["log"]["console_level"], enqueue=True, format=log_format)
 logger.configure(extra={"id": "None"})
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='web', static_folder='web')
 # 使用loguru的日志记录器替换flask的日志记录器
 
 if config["cdn"] is False:
@@ -387,13 +387,9 @@ def check_config(func):
 @app.route('/<path:filename>', methods=['GET'], endpoint='other')
 @check_config
 def index(filename='index.html'):
-    # 替换首页中的占位符
     if filename == 'index.html':
-        with open(os.path.join('web', filename), 'r', encoding='utf-8') as f:
-            html = f.read()
-            html = re.sub("download page url", config["webui"]["download_url"], html)
-        return html
-    return send_from_directory('web', filename)
+        return render_template('index.html', download_url=config["webui"]["download_url"])
+    return app.send_static_file(filename)
 
 
 @app.route('/api', methods=['POST'], endpoint='api')
