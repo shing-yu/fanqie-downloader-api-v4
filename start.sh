@@ -38,7 +38,7 @@ done
 echo "start.sh------MySQL started successfully!"
 
 echo "start.sh------Waiting for MySQL to be ready..."
-sleep 10
+sleep 15
 
 # 启动Python程序
 python3 app.py
