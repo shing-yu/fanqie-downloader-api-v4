@@ -28,8 +28,10 @@ RUN chmod +x /app/start.sh
 RUN pip3 install --no-cache-dir -r /app/requirements.txt
 #RUN pip3 install --no-cache-dir -r /app/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
-# 解决MySQL DNS解析问题
+# 配置MySQL
 RUN echo "skip-name-resolve" >> /etc/mysql/my.cnf
+RUN echo "general_log = 1" >> /etc/mysql/my.cnf
+RUN echo "general_log_file = /var/lib/mysql/general.log" >> /etc/mysql/my.cnf
 
 EXPOSE 5000
 EXPOSE 3306
