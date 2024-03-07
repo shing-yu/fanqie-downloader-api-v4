@@ -10,7 +10,7 @@ p.s. 如果镜像拉取缓慢，可参考 [配置镜像加速器_容器镜像服
 
 ### 无MySQL
 
-如果你没有MySQL服务，或想新建一个，可以使用带有`mysql`或`latest`标签的docker镜像，容器内自带MySQL
+如果你没有MySQL服务，或想新建一个，可以使用带有`版本号-mysql`或`latest`标签的docker镜像，镜像内自带MySQL
 
 部署命令：
 
@@ -42,7 +42,7 @@ sudo docker run -d \
 
 ### 已有MySQL
 
-如果你已有部署完成的MySQL服务，可以使用带有`nomysql`标签的镜像
+如果你已有部署完成的MySQL服务，可以使用带有`版本号-nomysql`标签的镜像
 
 部署命令：
 
