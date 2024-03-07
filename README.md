@@ -217,7 +217,7 @@ python app.py
 | mysql.port        | MySQL端口号                                                                            | 3306           |
 | mysql.user        | MySQL用户名                                                                            | root           |
 | mysql.password    | MySQL密码                                                                              | _空_          |
-| mysql.database    | MySQL数据库名称                                                                        | fanqieapi      |
+| mysql.database    | MySQL数据库名称                                                                 | fdapiv4               |
 | administrator.enable| 是否启用管理员接口                                                                    | false          |
 | administrator.password| 管理员密码（启用需配置）                                                                  | L147258963oOOi|
 | administrator.totp.enable| 是否对管理行为二次验证                                           | false          |
@@ -232,7 +232,7 @@ python app.py
 | limiter.\*.per_minute | 每分钟请求限制数量                                                               |                       |
 | limiter.\*.per_hour | 每小时请求限制数量                                                                 |             |
 | limiter.\*.per_day | 每日请求限制数量                       |             |
-| upload.base_dir   | 上传基础目录                                                                           | API/小说       |
+| upload.base_dir   | 上传基础目录                                                                           | fqapiv4/output |
 | upload.cos.enable | 是否启用腾讯云对象存储                                                                 | false          |
 | upload.cos.secret_id| 腾讯云对象存储SecretId（启用需配置）                                                       | ""             |
 | upload.cos.secret_key| 腾讯云对象存储SecretKey（启用需配置）                                                      | ""             |
@@ -285,7 +285,7 @@ python app.py
     "port": 3306,
     "user": "root",
     "password": "",
-    "database": "fanqieapi"
+    "database": "fdapiv4"
   },
   "administrator": {
     "enable": false,
@@ -320,7 +320,7 @@ python app.py
     }
   },
   "upload": {
-    "base_dir": "API/小说",
+    "base_dir": "fqapiv4/output",
     "cos": {
       "enable": false,
       "secret_id": "",
