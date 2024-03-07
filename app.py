@@ -344,7 +344,7 @@ class Spider:
                 cura.close()
                 logger.debug(f"此书已存在且正在下载", id=book_id)
                 # 如果正在下载，返回提示信息
-                return "此书籍已存在且正在下载（如果你需要查询，请在“类型”中选择“查询”而不是“添加”）"
+                return "此书籍已存在且正在下载"
             else:
                 cura.execute("SELECT last_update FROM novels WHERE id=%s", (book_id,))
                 row = cura.fetchone()
