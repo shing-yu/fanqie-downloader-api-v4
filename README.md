@@ -196,7 +196,7 @@ python app.py
 | 属性              | 说明                                                                                   | 默认值         |
 |-------------------|----------------------------------------------------------------------------------------|----------------|
 | wsgi              | 是否使用了WSGI服务器（不同行为）                                             | false          |
-| reserve_proxy     | 是否使用了反向代理（不同行为）                                                                | false          |
+| cors                                | 是否允许跨域资源访问                    | false          |
 | cdn               | 是否使用了CDN（不同行为）                                                                  | false          |
 | webui.enable      | 是否启用Web用户界面                                                                     | true           |
 | webui.download_url | 你的下载地址，用于引导用户前往下载 | https://example.com/ |
@@ -255,7 +255,7 @@ python app.py
 ```json
 {
   "wsgi": false,
-  "reserve_proxy": false,
+  "cors": false,
   "cdn": false,
   "webui": {
     "enable": true,

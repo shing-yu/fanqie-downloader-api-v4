@@ -104,9 +104,12 @@ def get_ip():
         return get_remote_address()
 
 
-if config["reserve_proxy"] is False:
+if config["cors"]:
     from flask_cors import CORS
     CORS(app)
+    logger.info("CORS跨域资源访问已启用")
+else:
+    logger.info("CORS跨域资源访问已禁用")
 limiter = Limiter(
     key_func=get_ip,
     app=app,

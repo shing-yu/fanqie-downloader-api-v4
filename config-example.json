@@ -1,7 +1,7 @@
 {
   "comment": "这是一个示例配置文件, 请复制此文件并重命名为config.json, 然后修改为你自己的配置",
   "wsgi": false,
-  "reserve_proxy": false, "?reserve_proxy": "如果你使用了反向代理，请将该项改为‘true’，否则程序将出现错误",
+  "cors": false, "?cors": "是否启用跨域请求",
   "cdn": false,
   "webui": {
     "enable": true,
