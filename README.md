@@ -25,7 +25,7 @@ sudo docker run -d \
   -p 3306:3306 \
   --name fdapiv4 \
   --restart unless-stopped \
-  shingyu/fanqie-downloader-api-v4:mysql
+  shingyu/fanqie-downloader-api-v4:latest-mysql
 ```
 
 [# 参数说明](#参数说明)
@@ -54,7 +54,7 @@ sudo docker run -d \
   -p 5000:5000 \
   --name fdapiv4 \
   --restart unless-stopped \
-  shingyu/fanqie-downloader-api-v4:nomysql
+  shingyu/fanqie-downloader-api-v4:latest-nomysql
 ```
 
 [# 参数说明](#参数说明)
