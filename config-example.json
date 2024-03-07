@@ -31,7 +31,7 @@
     "port": 3306,
     "user": "root",
     "password": "",
-    "database": "fanqieapi"
+    "database": "fdapiv4"
   },
   "administrator": {
     "enable": false,
