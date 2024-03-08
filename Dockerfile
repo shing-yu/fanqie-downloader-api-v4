@@ -25,7 +25,8 @@ RUN chmod +x /app/entrypoint.sh
 RUN chmod +x /app/start.sh
 
 # 安装依赖
-RUN pip3 install --no-cache-dir -r /app/requirements.txt
+RUN python3 -m venv /app/venv
+RUN /app/venv/bin/pip install --no-cache-dir -r /app/requirements.txt
 #RUN pip3 install --no-cache-dir -r /app/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 配置MySQL

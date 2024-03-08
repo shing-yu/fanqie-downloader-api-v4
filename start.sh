@@ -41,4 +41,4 @@ echo "start.sh------Waiting for MySQL to be ready..."
 sleep 15
 
 # 启动Python程序
-python3 app.py
+/app/venv/bin/python app.py
