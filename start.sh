@@ -41,4 +41,4 @@ echo "start.sh------Waiting for MySQL to be ready..."
 sleep 15
 
 # 使用gunicorn启动Flask应用
-/app/venv/bin/gunicorn -w 3 -b 5000 app:app
+/app/venv/bin/gunicorn -w 3 -b 127.0.0.1:5000 app:app
