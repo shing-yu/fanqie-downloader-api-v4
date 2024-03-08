@@ -14,6 +14,7 @@ from flask_limiter.util import get_remote_address
 from datetime import datetime, timedelta
 # 改用MySQL
 import pymysql
+from pymysql.cursors import Cursor as OriginalCursor
 from loguru import logger
 import logging
 
@@ -117,6 +118,17 @@ limiter = Limiter(
 )
 logger.info("程序初始化完成")
 
+
+class AutoReconnectCursor(OriginalCursor):
+    def execute(self, query, args=None):
+        try:
+            return super().execute(query, args)
+        except (pymysql.err.OperationalError, pymysql.err.InterfaceError):
+            logger.warning("数据库连接中断，尝试重连")
+            conn.ping(reconnect=True)
+            return super().execute(query, args)
+
+
 # 创建并连接数据库
 conn = pymysql.connect(
     host=config["mysql"]["host"],
@@ -124,7 +136,8 @@ conn = pymysql.connect(
     user=config["mysql"]["user"],
     password=config["mysql"]["password"],
     charset='utf8mb4',
-    autocommit=True)
+    autocommit=True,
+    cursorclass=AutoReconnectCursor)
 conn.cursor().execute("CREATE DATABASE IF NOT EXISTS %s" % config["mysql"]["database"])
 conn.select_db(config["mysql"]["database"])
 
@@ -171,6 +184,7 @@ def block_method():
     logger.info(f"请求：{get_ip()} - {request.method} - {request.path}")
     if request.method == 'POST':
         ip = get_ip()
+        conn.ping(reconnect=True)
         # 检查IP是否在黑名单中
         cur1 = conn.cursor()
         cur1.execute("SELECT unblock_time FROM blacklist WHERE ip=%s", (ip,))
