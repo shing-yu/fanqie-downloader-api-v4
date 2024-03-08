@@ -1,9 +1,6 @@
 name: Build and Push Docker Images
 
 on:
-  create:
-    tags:
-      - "*"
   push:
     tags:
       - "*"
