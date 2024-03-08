@@ -14,7 +14,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y ca-certificates
 
 # 安装Python
-RUN apt-get install -y python3 python3-pip
+RUN apt-get install -y python3 python3-pip python3-venv
 #RUN python3 -m pip install --upgrade pip
 #RUN python3 -m pip install --upgrade pip -i https://pypi.tuna.tsinghua.edu.cn/simple
 
