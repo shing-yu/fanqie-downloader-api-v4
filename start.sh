@@ -40,5 +40,5 @@ echo "start.sh------MySQL started successfully!"
 echo "start.sh------Waiting for MySQL to be ready..."
 sleep 15
 
-# 启动Python程序
-/app/venv/bin/python app.py
+# 使用gunicorn启动Flask应用
+/app/venv/bin/gunicorn -w 3 -b 5000 app:app

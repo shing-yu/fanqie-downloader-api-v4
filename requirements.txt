@@ -10,4 +10,7 @@ pyotp
 loguru
 cryptography
 
+# wsgi
+gunicorn
+
 pymysql
