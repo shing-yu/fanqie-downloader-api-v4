@@ -125,7 +125,8 @@ class AutoReconnectCursor(OriginalCursor):
             return super().execute(query, args)
         except (pymysql.err.OperationalError, pymysql.err.InterfaceError):
             logger.warning("数据库连接中断，尝试重连")
-            conn.ping(reconnect=True)
+            self.connection.ping(reconnect=True)
+            self.connection.select_db(config["mysql"]["database"])
             return super().execute(query, args)
 
 
