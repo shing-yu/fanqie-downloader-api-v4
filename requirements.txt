@@ -8,5 +8,6 @@ Flask-Limiter
 cos-python-sdk-v5
 pyotp
 loguru
+cryptography
 
 pymysql
