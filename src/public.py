@@ -2,6 +2,7 @@
 import re
 from bs4 import BeautifulSoup
 import requests
+from loguru import logger
 
 
 # 替换非法字符
@@ -105,7 +106,7 @@ def get_api(chapter, headers):
     # 尝试获取章节内容
     chapter_content = None
     retry_count = 1
-    while retry_count < 4:  # 设置最大重试次数
+    while retry_count < 6:  # 设置最大重试次数
         try:
             # 获取 api 响应
             api_response = requests.get(api_url, headers=headers, timeout=5)
@@ -114,9 +115,9 @@ def get_api(chapter, headers):
             api_data = api_response.json()
         except Exception as e:
             if retry_count == 1:
-                print(f"发生异常: {e}")
-                print(f"{chapter_title} 获取失败，正在尝试重试...")
-            print(f"第 ({retry_count}/3) 次重试获取章节内容")
+                logger.warning(f"发生异常: {e}")
+                logger.warning(f"{chapter_title} 获取失败，正在尝试重试...")
+            logger.warning(f"第 ({retry_count}/5) 次重试获取章节内容")
             retry_count += 1  # 否则重试
             continue
 
@@ -125,12 +126,12 @@ def get_api(chapter, headers):
             break  # 如果成功获取章节内容，跳出重试循环
         else:
             if retry_count == 1:
-                print(f"{chapter_title} 获取失败，正在尝试重试...")
-            print(f"第 ({retry_count}/3) 次重试获取章节内容")
+                logger.warning(f"{chapter_title} 获取失败，正在尝试重试...")
+            logger.warning(f"第 ({retry_count}/5) 次重试获取章节内容")
             retry_count += 1  # 否则重试
 
-    if retry_count == 4:
-        print(f"无法获取章节内容: {chapter_title}，跳过。")
+    if retry_count == 6:
+        logger.error(f"{chapter_title} 获取失败，已达到最大重试次数")
         return  # 重试次数过多后，跳过当前章节
 
     # 提取文章标签中的文本

@@ -51,7 +51,7 @@ def download(url: str, encoding: str, config: dict, save_dir: str) -> tuple:
                 result = p.get_api(chapter, headers)
 
                 if result is None:
-                    continue
+                    raise Exception("章节内容获取失败")
                 else:
                     chapter_title, chapter_text, chapter_id = result
 
@@ -168,7 +168,7 @@ def update(url: str, encoding: str, start_id: str, file_path: str, config: dict)
                     result = p.get_api(chapter, headers)
 
                     if result is None:
-                        continue
+                        raise Exception("章节内容获取失败")
                     else:
                         chapter_title, chapter_text, chapter_id_now = result
 
