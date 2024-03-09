@@ -17,6 +17,7 @@ import pymysql
 from pymysql.cursors import Cursor as OriginalCursor
 from loguru import logger
 import logging
+from timeout_decorator import TimeoutError
 
 # 如果是docker环境，则检测是否挂载
 if os.getenv("DOCKER_MODE") == "True":
@@ -121,13 +122,20 @@ logger.info("程序初始化完成")
 
 class AutoReconnectCursor(OriginalCursor):
     def execute(self, query, args=None):
-        try:
-            return super().execute(query, args)
-        except (pymysql.err.OperationalError, pymysql.err.InterfaceError):
-            logger.warning("数据库连接中断，尝试重连")
-            self.connection.ping(reconnect=True)
-            self.connection.select_db(config["mysql"]["database"])
-            return super().execute(query, args)
+        i = 1
+        while i <= 3:
+            try:
+                return super().execute(query, args)
+            except (pymysql.err.OperationalError, pymysql.err.InterfaceError):
+                logger.warning(f"数据库连接中断，尝试重连（{i}/3）")
+                self.connection.ping(reconnect=True)
+                self.connection.select_db(config["mysql"]["database"])
+            except Exception as e:
+                logger.exception(e)
+                logger.error(f"数据库操作失败: {e}，尝试重试（{i}/3）")
+            i += 1
+        logger.error("数据库操作失败，已达到最大重试次数")
+        sys.exit(1)
 
 
 # 创建并连接数据库
@@ -280,6 +288,9 @@ class Spider:
                     return "True"
                 else:
                     return "False"
+        except TimeoutError:
+            logger.error(f"此书爬取超时", id=book_id)
+            return "Timeout"
         except Exception as e:
             logger.error(f"此书爬取失败，错误信息: {e}", id=book_id)
             return "False"
@@ -306,6 +317,9 @@ class Spider:
                 elif status == "failed":
                     curn.execute("UPDATE novels SET status=%s WHERE id=%s", ("更新失败", book_id))
                     logger.debug(f"此书状态更新为更新失败", id=book_id)
+                elif status == "Timeout":
+                    curn.execute("UPDATE novels SET status=%s WHERE id=%s", ("超时", book_id))
+                    logger.debug(f"此书状态更新为超时", id=book_id)
                 else:
                     curn.execute("UPDATE novels SET status=%s WHERE id=%s", ("失败", book_id))
                     logger.debug(f"此书状态更新为失败", id=book_id)
@@ -342,7 +356,7 @@ class Spider:
         cura = conn.cursor()
         cura.execute("SELECT status, finished FROM novels WHERE id=%s", (book_id,))
         row = cura.fetchone()
-        if row is None or row[0] == "失败":
+        if row is None or row[0] == "失败" or row[0] == "超时":
             self.url_queue.put(book_id_to_url(book_id))
             logger.debug(f"此书已添加到队列", id=book_id)
             cura.execute("REPLACE INTO novels (id, status) VALUES (%s, %s)", (book_id, "等待中"))

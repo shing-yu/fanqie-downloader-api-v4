@@ -14,8 +14,11 @@ from qcloud_cos import CosServiceError
 # noinspection PyPackageRequirements
 from qcloud_cos import CosClientError
 
+# from timeout_decorator import timeout
+
 
 # 定义正常模式用来下载番茄小说的函数
+# @timeout(60 * 60, use_signals=False)  # 1小时超时
 def download(url: str, encoding: str, config: dict, save_dir: str) -> tuple:
     title = None
     last_cid = None
@@ -121,6 +124,7 @@ def upload_cos(file_path, title, config):
         logger.info(f"小说《{title}》，路径：{file_path}，未上传到COS: 未启用上传功能")
 
 
+# @timeout(60 * 60, use_signals=False)  # 1小时超时
 def update(url: str, encoding: str, start_id: str, file_path: str, config: dict) -> tuple:
     chapter_id_now = start_id
     finished: int = 0

@@ -9,6 +9,7 @@ cos-python-sdk-v5
 pyotp
 loguru
 cryptography
+timeout-decorator
 
 # wsgi
 gunicorn
