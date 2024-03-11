@@ -49,7 +49,13 @@ def get_fanqie(url, user_agent):
 
     # 获取网页源码
 
-    response = requests.get(url, headers=headers, timeout=20)
+    try:
+        response = requests.get(url, headers=headers, timeout=7)
+    except requests.exceptions.Timeout:
+        raise Exception("请求超时")
+
+    if response.status_code == 404:
+        raise Exception(f"请求失败，404")
     html = response.text
 
     # 解析网页源码
