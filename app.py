@@ -444,6 +444,9 @@ def api():
         return "Bad Request.The request is missing necessary json data.", 400
     if data['id'].isdigit():
         logger.debug(f"用户输入是纯数字，将被直接使用", id=data['id'])
+        if len(data['id']) < 15:
+            logger.info("用户输入的ID长度不正确，返回400错误")
+            return "你输入的书籍ID长度不正确，仅支持番茄小说，请检查后再试。", 400
         pass
     else:
         if 'fanqienovel.com/page' in data['id']:
