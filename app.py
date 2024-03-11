@@ -265,6 +265,7 @@ class Spider:
                 res = update(url, config["encoding"], last_cid, str(file_path), config)  # 提交任务
                 # 获取任务和小说信息
                 status, last_cid, finished = res
+                logger.info("下载结束", id=book_id)
                 # 写入数据库
                 curm.execute("UPDATE novels SET last_cid=%s, last_update=%s, finished=%s WHERE id=%s",
                              (last_cid, datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), finished, book_id))
@@ -280,6 +281,7 @@ class Spider:
                 res = download(url, config["encoding"], config, save_dir)  # 提交任务
                 # 获取任务和小说信息
                 status, name, last_cid, finished = res
+                logger.info("下载结束", id=book_id)
                 # 写入数据库
                 curm.execute("UPDATE novels SET name=%s, last_cid=%s, last_update=%s, finished=%s WHERE id=%s",
                              (name, last_cid, datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'), finished, book_id))
