@@ -10,7 +10,7 @@ p.s. 如果镜像拉取缓慢，可参考 [配置镜像加速器_容器镜像服
 
 ### 无MySQL
 
-如果你没有MySQL服务，或想新建一个，可以使用带有`版本号-mysql`或`latest`标签的docker镜像，镜像内自带MySQL
+如果你没有MySQL服务，或想新建一个，可以使用带有`版本号-mysql`或`latest`标签的docker镜像，镜像内自带MySQL（不保证稳定性）
 
 部署命令：
 
@@ -87,6 +87,12 @@ sudo docker stop fdapiv4
 
 ```shell
 sudo docker restart fdapiv4
+```
+
+- 查看日志
+
+```shell
+sudo docker logs -f fdapiv4
 ```
 
 <br>
@@ -185,6 +191,18 @@ pip install -r requirements.txt
 ```bash
 python app.py
 # python3 app.py
+```
+
+**注意：在生产环境中，请不要以以上方式通过Flask自带的服务器运行项目，可能会导致性能问题；而是应该使用如Gunicorn等WSGI服务器**
+
+如：
+
+```bash
+# requirements.txt中已包含gunicorn，如未安装，请使用以下命令安装
+pip install gunicorn
+# pip3 install gunicorn
+
+gunicorn -w 1 -b 0.0.0.0:5000 app:app
 ```
 
 <br>
@@ -342,3 +360,17 @@ python app.py
 
 }
 ```
+
+## Q&A
+
+### 1. 为什么我的服务无法访问？
+
+A：如果你在服务器上部署项目，或使用了防火墙程序，请检查安全组/防火墙是否允许了你设定的服务端口。
+
+### 2. 在生产环境中，我还需要做什么？
+
+A：在生产环境中，你可能需要Nginx/Apache等反向代理服务器，以提高性能和安全性。
+
+### 3. 我是否可以使用不在本机部署的MySQL服务？
+
+A：当然可以，只需要在配置文件中填入相关信息即可。但是，如果MySQL服务不在本地，你需要确保MySQL服务允许远程访问，并考虑网络延迟问题。
