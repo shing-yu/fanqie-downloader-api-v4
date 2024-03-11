@@ -15,5 +15,5 @@ RUN pip3 install --no-cache-dir -r /app/requirements.txt
 ENV PYTHONUNBUFFERED=1
 ENV DOCKER_MODE=True
 
-# 运行应用程序
-CMD ["python", "app.py"]
+# 使用gunicorn启动应用
+CMD [gunicorn, "-w", "1", "-b", "0.0.0.0:5000", "app:app"]
