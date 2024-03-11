@@ -34,7 +34,6 @@ jobs:
         tags: |
           shingyu/fanqie-downloader-api-v4:${{ steps.get_tag.outputs.TAG_NAME }}-mysql
           shingyu/fanqie-downloader-api-v4:latest-mysql
-          shingyu/fanqie-downloader-api-v4:latest
 
     - name: Build and push image from Dockerfile-2
       uses: docker/build-push-action@v2
@@ -45,3 +44,4 @@ jobs:
         tags: |
           shingyu/fanqie-downloader-api-v4:${{ steps.get_tag.outputs.TAG_NAME }}-nomysql
           shingyu/fanqie-downloader-api-v4:latest-nomysql
+          shingyu/fanqie-downloader-api-v4:latest
