@@ -16,4 +16,4 @@ ENV PYTHONUNBUFFERED=1
 ENV DOCKER_MODE=True
 
 # 使用gunicorn启动应用
-CMD [gunicorn, "-w", "1", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:5000", "app:app"]
