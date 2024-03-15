@@ -158,7 +158,7 @@ cursor = conn.cursor()
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS blacklist
 (
-    ip           varchar(255) not null
+    ip           varchar(180) not null
         primary key,
     unblock_time text         null
 );
@@ -169,7 +169,7 @@ cursor.execute('''
 CREATE TABLE IF NOT EXISTS novels
 (
     num         int auto_increment,
-    id          varchar(255) not null
+    id          varchar(180) not null
         primary key,
     name        text         null,
     status      text         null,
