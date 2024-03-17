@@ -120,12 +120,19 @@ limiter = Limiter(
 logger.info("程序初始化完成")
 
 
+lock = threading.Lock()
+logger.info("线程锁初始化完成")
+
+
 class AutoReconnectCursor(OriginalCursor):
     def execute(self, query, args=None):
         i = 1
         while i <= 3:
             try:
-                return super().execute(query, args)
+                lock.acquire()
+                result = super().execute(query, args)
+                lock.release()
+                return result
             except (pymysql.err.OperationalError, pymysql.err.InterfaceError):
                 logger.warning(f"数据库连接中断，尝试重连（{i}/3）")
                 self.connection.ping(reconnect=True)
